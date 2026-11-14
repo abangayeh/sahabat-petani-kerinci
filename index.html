@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sahabat Petani Kerinci — panduan budidaya, informasi harga komoditas, dan alat bantu praktis untuk petani Indonesia.">
+  <meta name="theme-color" content="#173f2a">
+  <title>Sahabat Petani Kerinci | Tumbuh Bersama Petani Indonesia</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="#beranda" aria-label="Sahabat Petani Kerinci">
+    <span class="brand-mark">🌱</span><span>Sahabat Petani <b>Kerinci</b></span>
+  </a>
+  <button class="menu-toggle" aria-label="Buka menu" aria-expanded="false">☰</button>
+  <nav class="nav">
+    <a href="#komoditas">Harga komoditas</a><a href="#kalkulator">Kalkulator</a><a href="#panduan">Panduan</a><a href="#pesona">Pesona Kerinci</a><a href="#data-komoditas">Komoditas</a><a href="#berita">Berita</a><a href="#tentang">Tentang</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero" id="beranda">
+  <div class="hero-copy">
+    <p class="eyebrow">Dari Kerinci untuk Indonesia</p>
+    <h1>Petani maju,<br><em>Indonesia tumbuh.</em></h1>
+    <p class="hero-text">Teman belajar petani untuk mengenal budidaya, merencanakan biaya, memantau informasi komoditas, dan mengembangkan usaha tani dengan lebih terarah.</p>
+    <div class="hero-actions"><a class="btn primary" href="#kalkulator">Hitung usaha tani</a><a class="btn secondary" href="#panduan">Baca panduan</a></div>
+    <div class="hero-proof"><span>🌱 Belajar budidaya</span><span>🧮 Hitung biaya</span><span>📊 Kenali pasar</span></div>
+  </div>
+  <div class="hero-art" role="img" aria-label="Ilustrasi lahan pertanian hijau">
+    <div class="sun"></div><div class="hill hill-back"></div><div class="hill hill-front"></div>
+    <div class="field-lines"></div><div class="plant plant-one">🌿</div><div class="plant plant-two">🌾</div>
+    <div class="art-label"><strong>Belajar • Menghitung • Berkembang</strong><span>Ruang informasi untuk petani Indonesia</span></div>
+  </div>
+</section>
+
+<section class="trust-strip"><span>🌾 Budidaya tanaman</span><span>🧮 Perencanaan usaha</span><span>📚 Panduan praktis</span><span>📍 Berawal dari Kerinci</span></section>
+
+<section class="section" id="komoditas">
+  <div class="section-heading">
+    <p class="eyebrow">Pantau informasi pasar</p>
+    <h2>Harga hasil pertanian.</h2>
+    <p>Ruang informasi harga komoditas untuk Kerinci dan sekitarnya. Data akan ditampilkan setelah sumber dan tanggal pembaruan tersedia.</p>
+  </div>
+  <div class="price-panel">
+    <div class="price-panel-head"><div><strong>Papan komoditas</strong><span>Wilayah prioritas: Kerinci dan sekitarnya</span></div><span class="data-status">Menunggu data terverifikasi</span></div>
+    <div class="price-table-wrap">
+      <table class="price-table">
+        <thead><tr><th>Komoditas</th><th>Harga</th><th>Satuan</th><th>Pembaruan</th></tr></thead>
+        <tbody>
+          <tr><td>Cabai merah</td><td class="pending">Belum tersedia</td><td>kg</td><td>—</td></tr>
+          <tr><td>Cabai rawit</td><td class="pending">Belum tersedia</td><td>kg</td><td>—</td></tr>
+          <tr><td>Kentang</td><td class="pending">Belum tersedia</td><td>kg</td><td>—</td></tr>
+          <tr><td>Bawang merah</td><td class="pending">Belum tersedia</td><td>kg</td><td>—</td></tr>
+          <tr><td>Kopi</td><td class="pending">Belum tersedia</td><td>kg</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note" id="price-note">Catatan: harga akan ditampilkan setelah admin memasukkan data beserta lokasi, sumber, satuan, dan tanggal pembaruan.</p>
+    <div class="public-stats"><h3>Perkembangan harga tercatat</h3><p>Grafik hanya menampilkan riwayat yang telah dimasukkan dan diverifikasi pengelola.</p><label for="chart-crop">Pilih komoditas</label><select id="chart-crop"><option value="">Belum ada data</option></select><canvas id="price-chart" height="180" aria-label="Grafik perkembangan harga"></canvas><p id="chart-empty">Belum ada riwayat harga yang dapat ditampilkan.</p></div>
+  </div>
+</section>
+
+<section class="calculator-section" id="kalkulator">
+  <div class="calculator-intro"><p class="eyebrow">Alat bantu gratis</p><h2>Hitung perkiraan untung panenmu.</h2><p>Masukkan perkiraan hasil panen, harga jual, dan biaya produksi. Hasilnya merupakan simulasi, bukan jaminan keuntungan.</p><div class="note">💡 Catat juga biaya sewa lahan, pestisida, transportasi, kemasan, penyusutan alat, dan biaya lain agar perhitungan lebih realistis.</div></div>
+  <form class="calculator" id="profit-form">
+    <div class="field"><label for="yield">Hasil panen (kg)</label><input id="yield" type="number" min="0" step="any" value="1000" required></div>
+    <div class="field"><label for="price">Harga jual per kg (Rp)</label><input id="price" type="number" min="0" step="any" value="8000" required></div>
+    <div class="field"><label for="seed">Benih / bibit (Rp)</label><input id="seed" type="number" min="0" step="any" value="300000" required></div>
+    <div class="field"><label for="fertilizer">Pupuk & perawatan (Rp)</label><input id="fertilizer" type="number" min="0" step="any" value="500000" required></div>
+    <div class="field"><label for="labor">Tenaga kerja (Rp)</label><input id="labor" type="number" min="0" step="any" value="400000" required></div>
+    <div class="field"><label for="other">Biaya lainnya (Rp)</label><input id="other" type="number" min="0" step="any" value="200000" required></div>
+    <button class="btn primary full" type="submit">Hitung perkiraan</button>
+    <div class="results" aria-live="polite">
+      <div><span>Perkiraan omzet</span><strong id="revenue">Rp8.000.000</strong></div>
+      <div><span>Total biaya</span><strong id="cost">Rp1.400.000</strong></div>
+      <div class="profit-result"><span>Perkiraan laba / rugi</span><strong id="profit">Rp6.600.000</strong></div>
+      <p id="margin">Margin keuntungan: 82,5%</p>
+    </div>
+  </form>
+</section>
+
+<section class="section" id="panduan">
+  <div class="section-heading"><p class="eyebrow">Belajar bersama</p><h2>Panduan untuk usaha tani.</h2><p>Mulai dari perencanaan, pemilihan benih, sampai pencatatan hasil usaha.</p></div>
+  <div class="guide-grid">
+    <article class="guide-card"><span>01 / PERENCANAAN</span><h3>Menghitung biaya produksi sebelum mulai menanam</h3><p>Susun kebutuhan modal dan catat komponen biaya agar rencana usaha lebih terukur.</p><a href="panduan.html#biaya">Baca panduan →</a></article>
+    <article class="guide-card"><span>02 / BUDIDAYA</span><h3>Persiapan lahan dan pemilihan benih</h3><p>Kenali hal-hal yang perlu diperiksa sebelum memulai kegiatan tanam.</p><a href="panduan.html#lahan">Baca panduan →</a></article>
+    <article class="guide-card"><span>03 / PENCATATAN</span><h3>Mencatat hasil panen dan arus kas</h3><p>Gunakan catatan sederhana untuk mengevaluasi kegiatan dan hasil usaha tani.</p><a href="panduan.html#catatan">Baca panduan →</a></article>
+    <article class="guide-card crop-card"><span>04 / BUDIDAYA KENTANG</span><div class="crop-emoji" aria-hidden="true">🥔</div><h3>Panduan budidaya kentang</h3><p>Pelajari persiapan lahan, pemilihan bibit, perawatan, hingga penanganan panen.</p><a href="kentang.html">Buka panduan kentang →</a></article>
+    <article class="guide-card crop-card"><span>05 / BUDIDAYA CABAI</span><div class="crop-emoji" aria-hidden="true">🌶️</div><h3>Panduan budidaya cabai</h3><p>Kenali penyemaian, penanaman, pemeliharaan, serta gangguan tanaman cabai.</p><a href="cabai.html">Buka panduan cabai →</a></article>
+  </div>
+</section>
+
+<section class="section pesona-section" id="pesona">
+  <div class="section-heading"><p class="eyebrow">Keindahan alam daerah</p><h2>Pesona Alam Kerinci.</h2><p>Mengenal keindahan alam Kerinci—daerah yang menjadi inspirasi lahirnya Sahabat Petani Kerinci.</p></div>
+  <div class="pesona-grid">
+    <article class="pesona-card pesona-waterfall"><img class="pesona-photo" src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Air_Terjun_Telun_Berasap_1.jpg/960px-Air_Terjun_Telun_Berasap_1.jpg" alt="Air Terjun Telun Berasap di Kabupaten Kerinci" loading="lazy"><div class="pesona-caption"><span>01 / AIR TERJUN</span><h3>Air Terjun Telun Berasap</h3><p>Air terjun di kawasan Gunung Tujuh, Kabupaten Kerinci.</p><small>Foto: Ardi Ryan Dirza · CC BY-SA 4.0</small></div></article>
+    <article class="pesona-card pesona-mountain"><img class="pesona-photo" src="https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Puncak_Gunung_Kerinci_diabadikan_dari_kebun_teh_Kayu_Aro.jpg/960px-Puncak_Gunung_Kerinci_diabadikan_dari_kebun_teh_Kayu_Aro.jpg" alt="Pemandangan Gunung Kerinci dari Kebun Teh Kayu Aro" loading="lazy"><div class="pesona-caption"><span>02 / PEGUNUNGAN</span><h3>Gunung Kerinci</h3><p>Gunung megah yang menjadi ikon alam Kerinci.</p><small>Foto: Muhamad Izzul Fiqih · CC BY-SA 4.0</small></div></article>
+    <article class="pesona-card pesona-lake"><img class="pesona-photo" src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Danau_kerinci.jpg/960px-Danau_kerinci.jpg" alt="Pemandangan Danau Kerinci" loading="lazy"><div class="pesona-caption"><span>03 / DANAU</span><h3>Danau Kerinci</h3><p>Pemandangan danau dengan suasana perairan yang tenang.</p><small>Foto: Lulupakaika · CC BY-SA 4.0</small></div></article>
+    <article class="pesona-card pesona-tea"><img class="pesona-photo" src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Kebun_Teh_Kayu_Aro_Kerinci.jpg/960px-Kebun_Teh_Kayu_Aro_Kerinci.jpg" alt="Hamparan Kebun Teh Kayu Aro dengan Gunung Kerinci" loading="lazy"><div class="pesona-caption"><span>04 / PERKEBUNAN</span><h3>Kebun Teh Kayu Aro</h3><p>Hamparan kebun teh di kaki Gunung Kerinci.</p><small>Foto: Zhilal Darma · CC BY-SA 4.0</small></div></article>
+  </div>
+  <p class="gallery-note">Foto ditampilkan dari Wikimedia Commons. Hak cipta tetap milik masing-masing fotografer; foto berlisensi Creative Commons BY-SA 4.0.</p>
+</section>
+
+
+<section class="section" id="data-komoditas"><div class="section-heading"><p class="eyebrow">Kenali tanaman</p><h2>Informasi komoditas.</h2><p>Data cabai dan kentang yang telah diterbitkan pengelola.</p></div><div class="news-grid" id="public-crops"><p class="empty-news">Belum ada data komoditas yang diterbitkan.</p></div></section>
+<section class="section" id="berita"><div class="section-heading"><p class="eyebrow">Kabar dan pengetahuan</p><h2>Berita & informasi pertanian.</h2><p>Informasi yang diterbitkan pengelola Sahabat Petani Kerinci.</p></div><div class="news-grid" id="public-news"><p class="empty-news">Belum ada berita yang diterbitkan.</p></div></section>
+<section class="about" id="tentang"><div><p class="eyebrow">Tentang kami</p><h2>Sahabat Petani Kerinci</h2><p class="about-tagline">Dibangun dari Kerinci, dengan semangat tumbuh dan berbagi untuk petani Indonesia.</p></div><div class="about-copy"><p>Platform informasi dan alat bantu untuk petani. Berawal dari Kerinci, dengan semangat berbagi pengetahuan dan mendukung usaha tani yang lebih terencana di seluruh Indonesia.</p><div class="founder-card"><span class="founder-avatar" aria-hidden="true">🌱</span><div><span class="founder-label">DIPRAKARSAI OLEH</span><strong>Muhammad Rozikin <span class="name-amp">&amp;</span> Nurhasanah, S.E.</strong><span>Penggagas Sahabat Petani Kerinci</span></div></div></div></section>
+</main>
+<footer class="footer"><a class="brand footer-brand" href="#beranda">🌱 Sahabat Petani <b>Kerinci</b></a><p>Teman tumbuh untuk petani Indonesia.</p><div><a href="admin.html">Dashboard Admin</a><a href="privacy.html">Kebijakan Privasi</a><a href="disclaimer.html">Disclaimer</a><a href="mailto:">Kontak (segera diisi)</a></div><small>© <span id="year"></span> Sahabat Petani Kerinci. Informasi dan kalkulator bersifat edukatif.</small></footer>
+<script src="script.js"></script><script src="public-data.js"></script>
+</body></html>
