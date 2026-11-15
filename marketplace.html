@@ -1,0 +1,257 @@
+<!DOCTYPE html><html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Marketplace | Sahabat Petani Kerinci</title>
+
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="marketplace.css">
+
+</head><body><header class="site-header">
+    <a class="brand" href="index.html">
+        <span class="brand-mark">🌱</span>
+        <span>Sahabat Petani <b>Kerinci</b></span>
+    </a><nav class="nav">
+    <a href="index.html">Beranda</a>
+    <a href="#produk">Marketplace</a>
+    <a href="#akun">Akun</a>
+    <a href="#jual">Jual Hasil Tani</a>
+</nav>
+
+</header><main class="market-wrap"><section class="market-hero">
+    <p class="eyebrow">PASAR HASIL PERTANIAN</p>
+
+    <h1>
+        Hasil Tani Lokal,
+        <br>
+        <em>Lebih Mudah Ditemukan.</em>
+    </h1>
+
+    <p>
+        Temukan berbagai produk pertanian dari petani
+        dan penjual lokal. Dukung pertanian Kerinci
+        melalui perdagangan digital.
+    </p>
+
+    <a href="#produk" class="btn primary">
+        Lihat Produk
+    </a>
+</section>
+
+<section id="produk" class="market-section">
+
+    <div class="market-heading">
+        <div>
+            <p class="eyebrow">KATALOG</p>
+            <h2>Produk Tersedia</h2>
+        </div>
+
+        <button
+            class="btn secondary"
+            id="refresh-products"
+            type="button">
+            Muat Ulang
+        </button>
+    </div>
+
+    <div class="market-tools">
+
+        <input
+            id="product-search"
+            type="search"
+            placeholder="Cari cabai, kentang, kopi..."
+        >
+
+        <select id="category-filter">
+            <option value="">Semua Kategori</option>
+            <option>Sayuran</option>
+            <option>Buah</option>
+            <option>Perkebunan</option>
+            <option>Hasil olahan</option>
+            <option>Lainnya</option>
+        </select>
+
+    </div>
+
+    <p id="products-status">Memuat produk...</p>
+
+    <div id="product-grid" class="product-grid"></div>
+
+</section>
+
+<section id="akun" class="market-section account-section">
+
+    <div>
+        <p class="eyebrow">AKUN PENGGUNA</p>
+        <h2>Masuk atau Buat Akun</h2>
+
+        <p>
+            Bergabung sebagai pembeli atau petani
+            yang ingin menjual hasil pertanian.
+        </p>
+    </div>
+
+    <div class="account-card">
+
+        <div class="form-tabs">
+            <button type="button" class="active" data-mode="login">
+                Masuk
+            </button>
+
+            <button type="button" data-mode="register">
+                Daftar
+            </button>
+        </div>
+
+        <form id="auth-form">
+
+            <label id="name-field" hidden>
+                Nama Lengkap
+                <input name="name" maxlength="100">
+            </label>
+
+            <label>
+                Email
+                <input name="email" type="email" required>
+            </label>
+
+            <label id="phone-field" hidden>
+                Nomor Telepon
+                <input name="phone" maxlength="30">
+            </label>
+
+            <label>
+                Kata Sandi
+                <input
+                    name="password"
+                    type="password"
+                    required
+                    minlength="8">
+            </label>
+
+            <button
+                class="btn primary full"
+                id="auth-submit"
+                type="submit">
+                Masuk
+            </button>
+
+        </form>
+
+        <p id="auth-message"></p>
+
+        <div id="signed-in" hidden>
+            <p id="user-summary"></p>
+
+            <button
+                class="btn secondary"
+                id="become-seller"
+                type="button">
+                Aktifkan Akun Penjual
+            </button>
+
+            <button
+                class="btn secondary"
+                id="logout"
+                type="button">
+                Keluar
+            </button>
+        </div>
+
+    </div>
+
+</section>
+
+<section id="jual" class="market-section seller-section">
+
+    <div>
+        <p class="eyebrow">UNTUK PETANI</p>
+        <h2>Jual Hasil Pertanian</h2>
+
+        <p>
+            Pasarkan hasil pertanian melalui
+            Sahabat Petani Kerinci.
+        </p>
+    </div>
+
+    <form id="product-form" class="seller-card">
+
+        <label>
+            Nama Produk
+            <input
+                name="name"
+                required
+                maxlength="150"
+                placeholder="Contoh: Kentang Granola">
+        </label>
+
+        <label>
+            Kategori
+            <select name="category" required>
+                <option value="">Pilih Kategori</option>
+                <option>Sayuran</option>
+                <option>Buah</option>
+                <option>Perkebunan</option>
+                <option>Hasil olahan</option>
+                <option>Lainnya</option>
+            </select>
+        </label>
+
+        <div class="form-row">
+
+            <label>
+                Harga (Rp)
+                <input name="price" type="number" min="0" required>
+            </label>
+
+            <label>
+                Stok
+                <input name="stock" type="number" min="0" required>
+            </label>
+
+            <label>
+                Satuan
+                <input name="unit" value="kg" required>
+            </label>
+
+        </div>
+
+        <label>
+            Lokasi
+            <input
+                name="location"
+                placeholder="Contoh: Kayu Aro, Kerinci">
+        </label>
+
+        <label>
+            Deskripsi Produk
+            <textarea name="description" rows="4"></textarea>
+        </label>
+
+        <button class="btn primary full" type="submit">
+            Kirim Produk
+        </button>
+
+        <p id="product-message"></p>
+
+    </form>
+
+    <div class="my-products-section">
+        <h3>Produk Saya</h3>
+        <div id="my-products" class="product-grid"></div>
+    </div>
+
+</section>
+
+<div class="market-disclaimer">
+    Marketplace ini belum memproses pembayaran online.
+    Konfirmasikan kualitas barang, ongkos kirim,
+    dan metode pembayaran langsung dengan penjual.
+</div>
+
+</main><footer class="footer">
+    <a href="index.html" class="footer-brand">
+        Sahabat Petani Kerinci
+    </a><p>Belajar • Menghitung • Berkembang</p>
+
+</footer><script src="marketplace.js" defer></script></body>
+</html>
