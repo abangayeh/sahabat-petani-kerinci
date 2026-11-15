@@ -1,0 +1,382 @@
+/* =====================================
+   MARKETPLACE - SAHABAT PETANI KERINCI
+===================================== */
+
+:root {
+    --mp-green: #237a45;
+    --mp-dark: #185b34;
+    --mp-light: #eaf6ee;
+    --mp-orange: #f39c35;
+    --mp-text: #26352b;
+    --mp-muted: #718078;
+    --mp-border: #e2eae4;
+    --mp-white: #ffffff;
+    --mp-shadow: 0 8px 25px rgba(25, 75, 43, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--mp-text);
+    background: #f7faf7;
+    line-height: 1.6;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+/* HEADER */
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px 6%;
+    background: var(--mp-white);
+    border-bottom: 1px solid var(--mp-border);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.brand-mark {
+    font-size: 27px;
+}
+
+.brand b {
+    color: var(--mp-green);
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.nav a {
+    font-size: 14px;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.nav a:hover {
+    color: var(--mp-green);
+}
+
+/* GENERAL SECTION */
+
+section {
+    padding: 55px 6%;
+}
+
+.section-heading {
+    margin-bottom: 25px;
+}
+
+.section-heading h2 {
+    margin: 0 0 8px;
+    font-size: 27px;
+    color: var(--mp-dark);
+}
+
+.section-heading p {
+    margin: 0;
+    color: var(--mp-muted);
+}
+
+/* BUTTON */
+
+.btn,
+button {
+    cursor: pointer;
+}
+
+.btn {
+    display: inline-block;
+    padding: 11px 20px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--mp-green);
+    color: white;
+    font-weight: 700;
+    transition: 0.2s;
+}
+
+.btn:hover {
+    background: var(--mp-dark);
+    transform: translateY(-1px);
+}
+
+/* PRODUCT GRID */
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.product-card {
+    overflow: hidden;
+    background: var(--mp-white);
+    border: 1px solid var(--mp-border);
+    border-radius: 13px;
+    box-shadow: var(--mp-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(25, 75, 43, 0.13);
+}
+
+.product-card img {
+    display: block;
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    background: var(--mp-light);
+}
+
+.product-info {
+    padding: 16px;
+}
+
+.product-info h3 {
+    margin: 0 0 7px;
+    font-size: 17px;
+}
+
+.product-price {
+    margin: 8px 0;
+    color: var(--mp-green);
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.product-location {
+    color: var(--mp-muted);
+    font-size: 13px;
+}
+
+.product-info .btn {
+    display: block;
+    margin-top: 13px;
+    text-align: center;
+}
+
+/* SEARCH AND FILTER */
+
+.marketplace-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.marketplace-tools input,
+.marketplace-tools select {
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid var(--mp-border);
+    border-radius: 8px;
+    background: white;
+    outline: none;
+}
+
+.marketplace-tools input {
+    flex: 1;
+    min-width: 200px;
+}
+
+.marketplace-tools input:focus,
+.marketplace-tools select:focus {
+    border-color: var(--mp-green);
+}
+
+/* FORMS AND ACCOUNT */
+
+.form-card,
+.account-card {
+    max-width: 650px;
+    margin: 20px auto;
+    padding: 25px;
+    background: white;
+    border: 1px solid var(--mp-border);
+    border-radius: 13px;
+    box-shadow: var(--mp-shadow);
+}
+
+.form-card h2,
+.account-card h2 {
+    margin-top: 0;
+    color: var(--mp-dark);
+}
+
+.form-group {
+    margin-bottom: 17px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--mp-border);
+    border-radius: 8px;
+    background: white;
+    outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--mp-green);
+}
+
+.form-group textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+/* STATUS AND EMPTY MESSAGE */
+
+.status-message {
+    margin: 15px 0;
+    padding: 12px 15px;
+    border-radius: 8px;
+    background: var(--mp-light);
+    color: var(--mp-dark);
+}
+
+.empty-message {
+    padding: 35px 15px;
+    text-align: center;
+    color: var(--mp-muted);
+    background: white;
+    border: 1px dashed var(--mp-border);
+    border-radius: 12px;
+}
+
+/* FOOTER */
+
+footer {
+    padding: 30px 6%;
+    background: #173d28;
+    color: white;
+    text-align: center;
+}
+
+footer p {
+    margin: 5px 0;
+}
+
+/* RESPONSIVE TABLET */
+
+@media (max-width: 900px) {
+    .product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .site-header {
+        padding: 13px 4%;
+    }
+
+    section {
+        padding: 40px 4%;
+    }
+}
+
+/* RESPONSIVE MOBILE */
+
+@media (max-width: 600px) {
+    .site-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .brand {
+        font-size: 17px;
+    }
+
+    .nav {
+        width: 100%;
+        gap: 17px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .nav a {
+        flex-shrink: 0;
+        font-size: 13px;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .product-card img {
+        height: 135px;
+    }
+
+    .product-info {
+        padding: 11px;
+    }
+
+    .product-info h3 {
+        font-size: 14px;
+    }
+
+    .product-price {
+        font-size: 16px;
+    }
+
+    .form-card,
+    .account-card {
+        padding: 18px;
+    }
+
+    .section-heading h2 {
+        font-size: 23px;
+    }
+}
+
+@media (max-width: 360px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+}
