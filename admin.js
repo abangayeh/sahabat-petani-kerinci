@@ -27,7 +27,7 @@ function formObj(form){
   return Object.fromEntries(new FormData(form).entries());
 }
 
-const f=kind==='prices'?$('#price-form'):$('#'+kind+'-form');
+const f=$('#'+kind+'-form');
 if(!priceForm.elements.id){
   const hiddenId=document.createElement('input');
   hiddenId.type='hidden';
