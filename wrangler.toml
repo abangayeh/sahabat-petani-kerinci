@@ -4,5 +4,5 @@ pages_build_output_dir = "."
 
 [[d1_databases]]
 binding = "DB"
-database_name = "sahabat-petani-kerinci-db"
-database_id = "GANTI_DENGAN_DATABASE_ID_D1"
+database_name = "sahabat-petani-db"
+database_id = "e883d144-6c4e-4571-a9c4-4d0132664800"
