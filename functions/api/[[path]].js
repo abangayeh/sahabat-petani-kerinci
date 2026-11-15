@@ -108,6 +108,87 @@ export async function onRequest({request,env,params}) {
 
   try {
     if(resource==='prices') {
+  if(method==='GET') {
+    const {results} = await env.DB.prepare(
+      'SELECT id,commodity,price,unit,date,location,source,created_at FROM prices ORDER BY date DESC, id DESC LIMIT 300'
+    ).all();
+
+    const latest = Object.values(
+      (results||[]).reduce((a,x)=>{
+        if(!a[x.commodity]||x.date>a[x.commodity].date||
+          (x.date===a[x.commodity].date&&x.id>a[x.commodity].id))
+          a[x.commodity]=x;
+        return a;
+      },{})
+    );
+
+    return json({
+      items:latest.sort((a,b)=>a.commodity.localeCompare(b.commodity)),
+      history:results||[]
+    });
+  }
+
+  if(method==='POST') {
+    const b = await body(request);
+
+    if(!b.commodity||!Number.isFinite(Number(b.price))||
+      Number(b.price)<0||!b.date||!b.location||!b.source)
+      return json({
+        error:'Lengkapi komoditas, harga, tanggal, wilayah, dan sumber.'
+      },400);
+
+    await env.DB.prepare(
+      'INSERT INTO prices (commodity,price,unit,date,location,source) VALUES (?,?,?,?,?,?)'
+    ).bind(
+      String(b.commodity).slice(0,100),
+      Number(b.price),
+      String(b.unit||'kg').slice(0,20),
+      b.date,
+      String(b.location).slice(0,100),
+      String(b.source).slice(0,200)
+    ).run();
+
+    return json({ok:true},201);
+  }
+
+  if(id&&method==='PUT') {
+    const b = await body(request);
+
+    if(!b.commodity||!Number.isFinite(Number(b.price))||
+      Number(b.price)<0||!b.date||!b.location||!b.source)
+      return json({
+        error:'Lengkapi komoditas, harga, tanggal, wilayah, dan sumber.'
+      },400);
+
+    const result = await env.DB.prepare(
+      'UPDATE prices SET commodity=?,price=?,unit=?,date=?,location=?,source=? WHERE id=?'
+    ).bind(
+      String(b.commodity).slice(0,100),
+      Number(b.price),
+      String(b.unit||'kg').slice(0,20),
+      b.date,
+      String(b.location).slice(0,100),
+      String(b.source).slice(0,200),
+      Number(id)
+    ).run();
+
+    if(!result.meta.changes)
+      return json({error:'Data harga tidak ditemukan.'},404);
+
+    return json({ok:true});
+  }
+
+  if(id&&method==='DELETE') {
+    const result = await env.DB.prepare(
+      'DELETE FROM prices WHERE id=?'
+    ).bind(Number(id)).run();
+
+    if(!result.meta.changes)
+      return json({error:'Data harga tidak ditemukan.'},404);
+
+    return json({ok:true});
+  }
+    } {
       if(method==='GET') {
         const {results} = await env.DB.prepare(
           'SELECT id,commodity,price,unit,date,location,source,created_at FROM prices ORDER BY date DESC, id DESC LIMIT 300'
