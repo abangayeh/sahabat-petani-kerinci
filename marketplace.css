@@ -1,0 +1,362 @@
+/* =====================================
+   SAHABAT PETANI KERINCI
+   MARKETPLACE STYLESHEET
+===================================== */
+
+.market-wrap {
+    width: min(1120px, 92%);
+    margin: 0 auto;
+}
+
+/* HERO */
+
+.market-hero {
+    padding: 75px 30px;
+    margin: 25px 0 55px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #e8f5e9, #f4f8ed);
+}
+
+.market-hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.2;
+    margin: 15px 0;
+    color: #183b25;
+}
+
+.market-hero h1 em {
+    color: #39834c;
+    font-style: normal;
+}
+
+.market-hero > p:not(.eyebrow) {
+    max-width: 600px;
+    line-height: 1.8;
+    color: #526257;
+    margin-bottom: 25px;
+}
+
+/* SECTION */
+
+.market-section {
+    margin: 65px 0;
+    scroll-margin-top: 90px;
+}
+
+.market-section h2 {
+    color: #21452d;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+.eyebrow {
+    color: #4b8b55;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+/* HEADING */
+
+.market-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+/* BUTTON */
+
+.btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.btn.primary {
+    background: #287a3e;
+    color: white;
+}
+
+.btn.secondary {
+    background: #e8f2e9;
+    color: #28623a;
+}
+
+.btn.full {
+    width: 100%;
+}
+
+/* SEARCH AND FILTER */
+
+.market-tools {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.market-tools input,
+.market-tools select {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1px solid #d8e2d9;
+    border-radius: 10px;
+    background: white;
+    font-size: 0.95rem;
+}
+
+/* PRODUCT GRID */
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.product-card {
+    overflow: hidden;
+    border: 1px solid #e5ebe5;
+    border-radius: 16px;
+    background: white;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.05);
+    transition: 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.09);
+}
+
+.product-card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+}
+
+.product-info {
+    padding: 17px;
+}
+
+.product-info h3 {
+    margin: 0 0 10px;
+    color: #24452d;
+    font-size: 1.1rem;
+}
+
+.product-price {
+    color: #287a3e;
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 10px 0;
+}
+
+.product-location {
+    color: #718075;
+    font-size: 0.88rem;
+}
+
+.empty-message {
+    padding: 25px;
+    text-align: center;
+    color: #718075;
+    background: #f5f8f5;
+    border-radius: 12px;
+}
+
+/* ACCOUNT */
+
+.account-section,
+.seller-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 35px;
+}
+
+.account-card,
+.seller-card {
+    padding: 25px;
+    border: 1px solid #e2eae2;
+    border-radius: 17px;
+    background: white;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* FORM TABS */
+
+.form-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.form-tabs button {
+    flex: 1;
+    padding: 11px;
+    border: none;
+    border-radius: 9px;
+    background: #eef3ee;
+    color: #34543b;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.form-tabs button.active {
+    background: #287a3e;
+    color: white;
+}
+
+/* FORM */
+
+.account-card form,
+.seller-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.account-card label,
+.seller-card label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    color: #344a38;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.account-card input,
+.seller-card input,
+.seller-card select,
+.seller-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 13px;
+    border: 1px solid #d7e1d8;
+    border-radius: 9px;
+    background: white;
+    font: inherit;
+}
+
+.account-card input:focus,
+.seller-card input:focus,
+.seller-card select:focus,
+.seller-card textarea:focus,
+.market-tools input:focus {
+    outline: 2px solid #a7d5ad;
+    border-color: #39834c;
+}
+
+.seller-card textarea {
+    resize: vertical;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+/* ACCOUNT INFO */
+
+#auth-message,
+#product-message,
+#products-status {
+    color: #657568;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+#signed-in {
+    margin-top: 20px;
+    padding: 17px;
+    border-radius: 12px;
+    background: #f0f7f0;
+}
+
+#signed-in button {
+    margin: 5px 5px 5px 0;
+}
+
+/* MY PRODUCTS */
+
+.my-products-section {
+    grid-column: 1 / -1;
+    margin-top: 25px;
+}
+
+.my-products-section h3 {
+    color: #24452d;
+    margin-bottom: 20px;
+}
+
+/* DISCLAIMER */
+
+.market-disclaimer {
+    margin: 50px 0;
+    padding: 18px 22px;
+    border-left: 4px solid #d5a642;
+    border-radius: 8px;
+    background: #fff9e9;
+    color: #71613a;
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 800px) {
+    .product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .account-section,
+    .seller-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 550px) {
+    .market-hero {
+        padding: 45px 22px;
+    }
+
+    .market-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .market-tools {
+        grid-template-columns: 1fr;
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .account-card,
+    .seller-card {
+        padding: 18px;
+    }
+
+    .market-section {
+        margin: 45px 0;
+    }
+}
