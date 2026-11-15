@@ -33,7 +33,7 @@ if(!priceForm.elements.id){
   hiddenId.type='hidden';
   hiddenId.name='id';
   priceForm.appendChild(hiddenId);
-}}
+}
 $('#price-form').date.value=new Date().toISOString().slice(0,10);
 $('#price-form').addEventListener('submit',async e=>{
   e.preventDefault();
