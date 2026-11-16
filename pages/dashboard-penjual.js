@@ -36,8 +36,40 @@ if (!token || !userData) {
 
 async function loadProducts(user) {
   try {
+
+    // Cari toko milik penjual
+    const storeResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/stores?select=id&owner_id=eq.${user.id}`,
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    if (!storeResponse.ok) {
+      throw new Error(await storeResponse.text());
+    }
+
+    const stores = await storeResponse.json();
+
+    if (stores.length === 0) {
+      document.getElementById("totalProducts").textContent = "0";
+      document.getElementById("pendingProducts").textContent = "0";
+      document.getElementById("activeProducts").textContent = "0";
+
+      productList.textContent =
+        "Anda belum memiliki toko. Silakan lengkapi data toko terlebih dahulu.";
+
+      return;
+    }
+
+    const storeId = stores[0].id;
+
+    // Ambil produk berdasarkan toko
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/products?select=id,name,price,unit,stock,location,status,created_at&seller_id=eq.${user.id}&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/products?select=id,name,price,unit,location,status,created_at&store_id=eq.${storeId}&order=created_at.desc`,
       {
         headers: {
           "apikey": SUPABASE_KEY,
@@ -52,6 +84,7 @@ async function loadProducts(user) {
 
     const products = await response.json();
 
+    // Hitung jumlah produk
     document.getElementById("totalProducts").textContent =
       products.length;
 
@@ -70,6 +103,7 @@ async function loadProducts(user) {
 
     products.forEach(product => {
       const item = document.createElement("div");
+
       item.style.padding = "15px";
       item.style.marginBottom = "12px";
       item.style.background = "#ffffff";
@@ -84,22 +118,21 @@ async function loadProducts(user) {
         Number(product.price).toLocaleString("id-ID") +
         " / " + (product.unit || "");
 
-      const stock = document.createElement("p");
-      stock.textContent = "Stok: " + (product.stock ?? "-");
-
       const location = document.createElement("p");
-      location.textContent = "Lokasi: " + (product.location || "-");
+      location.textContent =
+        "Lokasi: " + (product.location || "-");
 
       const status = document.createElement("p");
       status.textContent = "Status: " + product.status;
 
-      item.append(name, price, stock, location, status);
+      item.append(name, price, location, status);
       productList.appendChild(item);
     });
 
   } catch (error) {
     console.error("Gagal memuat produk:", error);
-    productList.textContent = "Gagal memuat produk. Silakan coba lagi.";
+    productList.textContent =
+      "Gagal memuat produk. Silakan coba lagi.";
   }
 }
 
