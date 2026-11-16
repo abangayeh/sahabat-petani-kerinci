@@ -364,6 +364,18 @@ footer {
     font-size: 11px;
 }
 
+/* KHAYALAN GRUP */
+
+.parent-company {
+    margin-top: 12px;
+    color: var(--dark) !important;
+    font-size: 12px !important;
+}
+
+.parent-company strong {
+    color: var(--green);
+    letter-spacing: 1px;
+}
 /* MOBILE */
 
 @media(max-width: 800px) {
