@@ -11,5 +11,7 @@
 
 <button type="submit">Masuk</button>
 
-  </form>  <p>Belum punya akun? <a href="register.html">Daftar</a></p></body>
+  </form>  <p>Belum punya akun? <a href="register.html">Daftar</a></p>
+<script src="../auth.js"></script>
+</body>
 </html>
