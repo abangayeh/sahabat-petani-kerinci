@@ -342,8 +342,7 @@ footer {
     display: flex;
     justify-content: space-between;
     padding-bottom: 35px;
-}
-.footer-logo {
+}.footer-logo {
     display: block;
     width: 220px;
     max-width: 100%;
