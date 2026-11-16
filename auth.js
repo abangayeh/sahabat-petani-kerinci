@@ -134,9 +134,9 @@ if (loginForm) {
 const role = result.user.user_metadata?.role;
 
 if (role === "seller") {
-    window.location.href = "dashboard-penjual.html";
+    window.location.href = "/pages/dashboard-penjual.html";
 } else {
-    window.location.href = "../index.html";
+    window.location.href = "/index.html";
 }
         } catch (error) {
             console.error("Login Error:", error);
