@@ -1,27 +1,94 @@
-const menuButton=document.querySelector('.menu-toggle');
-const nav=document.querySelector('.nav');
-menuButton?.addEventListener('click',()=>{
-  const open=nav.classList.toggle('open');
-  menuButton.setAttribute('aria-expanded',String(open));
-});
-nav?.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
-  nav.classList.remove('open');
-  menuButton?.setAttribute('aria-expanded','false');
-}));
-const rupiah=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number.isFinite(n)?n:0);
-function calculate(){
-  const val=id=>Math.max(0,Number(document.getElementById(id).value)||0);
-  const revenue=val('yield')*val('price');
-  const cost=val('seed')+val('fertilizer')+val('labor')+val('other');
-  const profit=revenue-cost;
-  document.getElementById('revenue').textContent=rupiah(revenue);
-  document.getElementById('cost').textContent=rupiah(cost);
-  document.getElementById('profit').textContent=rupiah(profit);
-  document.getElementById('profit').style.color=profit<0?'#b33b32':'#173f2a';
-  document.getElementById('margin').textContent='Margin keuntungan: '+(revenue>0?(profit/revenue*100).toLocaleString('id-ID',{maximumFractionDigits:1}):'0')+'%';
+const products = [
+    {
+        name: "Kentang Granola",
+        category: "Sayuran",
+        price: 18000,
+        location: "Kayu Aro",
+        image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=500"
+    },
+    {
+        name: "Cabai Merah",
+        category: "Sayuran",
+        price: 42000,
+        location: "Siulak",
+        image: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=500"
+    },
+    {
+        name: "Jeruk Kerinci",
+        category: "Buah-buahan",
+        price: 16000,
+        location: "Danau Kerinci",
+        image: "https://images.unsplash.com/photo-1547514701-42782101795e?w=500"
+    },
+    {
+        name: "Sapi Bali",
+        category: "Hewan ternak",
+        price: 12500000,
+        location: "Gunung Tujuh",
+        image: "https://images.unsplash.com/photo-1527153857715-3908f2109d2?w=500"
+    }
+];
+
+const productGrid = document.getElementById("productGrid");
+
+function renderProducts(data = products) {
+
+    productGrid.innerHTML = data.map(product => `
+
+        <div class="product-card">
+
+            <img src="${product.image}" alt="${product.name}">
+
+            <div class="product-info">
+
+                <h3>${product.name}</h3>
+
+                <div class="product-price">
+                    Rp ${product.price.toLocaleString("id-ID")}
+                </div>
+
+                <div class="product-location">
+                    📍 ${product.location}
+                </div>
+
+            </div>
+
+        </div>
+
+    `).join("");
+
 }
-document.getElementById('profit-form')?.addEventListener('submit',e=>{e.preventDefault();calculate();});
-document.querySelectorAll('#profit-form input').forEach(i=>i.addEventListener('input',calculate));
-const year=document.getElementById('year');
-if(year) year.textContent=new Date().getFullYear();
-calculate();
+
+function searchProducts() {
+
+    const keyword = document
+        .getElementById("searchInput")
+        .value
+        .toLowerCase();
+
+    const result = products.filter(product =>
+        product.name.toLowerCase().includes(keyword) ||
+        product.category.toLowerCase().includes(keyword) ||
+        product.location.toLowerCase().includes(keyword)
+    );
+
+    renderProducts(result);
+}
+
+document.querySelectorAll("[data-category]").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        const category = button.dataset.category;
+
+        const result = products.filter(product =>
+            product.category === category
+        );
+
+        renderProducts(result);
+
+    });
+
+});
+
+renderProducts();
