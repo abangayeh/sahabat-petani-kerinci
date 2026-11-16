@@ -61,7 +61,6 @@ if (registerForm) {
 if (!user.id) {
     throw new Error("Data pengguna tidak ditemukan.");
 }
-            }
 
             alert(
                 result.session
