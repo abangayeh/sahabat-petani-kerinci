@@ -1,79 +1,135 @@
-const products = [
-    {
-        name: "Kentang Granola",
-        category: "Sayuran",
-        price: 18000,
-        location: "Kayu Aro",
-        image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=500"
-    },
-    {
-        name: "Cabai Merah",
-        category: "Sayuran",
-        price: 42000,
-        location: "Siulak",
-        image: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=500"
-    },
-    {
-        name: "Jeruk Kerinci",
-        category: "Buah-buahan",
-        price: 16000,
-        location: "Danau Kerinci",
-        image: "https://images.unsplash.com/photo-1547514701-42782101795e?w=500"
-    },
-    {
-        name: "Sapi Bali",
-        category: "Hewan ternak",
-        price: 12500000,
-        location: "Gunung Tujuh",
-        image: "https://images.unsplash.com/photo-1527153857715-3908f2109d2?w=500"
-    }
-];
+// ========================================
+// SUPABASE CONFIGURATION
+// ========================================
+
+const SUPABASE_URL = "https://ipxywljkorzvyoukfoaw.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_K3UGmk7U-eBSUbJ3ysmOlQ_ysM2PMER";
+
+// ========================================
+// MENGAMBIL DATA PRODUK DARI SUPABASE
+// ========================================
+
+let products = [];
 
 const productGrid = document.getElementById("productGrid");
 
+async function loadProducts() {
+    try {
+        productGrid.innerHTML = "<p>Memuat produk...</p>";
+
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/products?select=*,categories(name)&status=eq.active&order=created_at.desc`,
+            {
+                headers: {
+                    "apikey": SUPABASE_KEY
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Gagal mengambil data produk");
+        }
+
+        products = await response.json();
+
+        renderProducts();
+
+    } catch (error) {
+        console.error("Supabase Error:", error);
+
+        productGrid.innerHTML =
+            "<p>Produk belum dapat dimuat. Silakan coba beberapa saat lagi.</p>";
+    }
+}
+
+// ========================================
+// MENAMPILKAN PRODUK
+// ========================================
+
 function renderProducts(data = products) {
 
-    productGrid.innerHTML = data.map(product => `
+    if (data.length === 0) {
+        productGrid.innerHTML =
+            "<p>Belum ada produk yang tersedia.</p>";
+        return;
+    }
 
-        <div class="product-card">
+    productGrid.innerHTML = data.map(product => {
 
-            <img src="${product.image}" alt="${product.name}">
+        const categoryName =
+            product.categories?.name || "Produk Pertanian";
 
-            <div class="product-info">
+        const image =
+            product.image_url ||
+            "https://placehold.co/500x350?text=Produk+Petani";
 
-                <h3>${product.name}</h3>
+        return `
+            <div class="product-card">
 
-                <div class="product-price">
-                    Rp ${product.price.toLocaleString("id-ID")}
-                </div>
+                <img
+                    src="${image}"
+                    alt="${product.name}"
+                    onerror="this.src='https://placehold.co/500x350?text=Produk+Petani'"
+                >
 
-                <div class="product-location">
-                    📍 ${product.location}
+                <div class="product-info">
+
+                    <h3>${product.name}</h3>
+
+                    <div class="product-category">
+                        ${categoryName}
+                    </div>
+
+                    <div class="product-price">
+                        Rp ${Number(product.price).toLocaleString("id-ID")}
+                        / ${product.unit || "unit"}
+                    </div>
+
+                    <div class="product-location">
+                        📍 ${product.location || "Kerinci"}
+                    </div>
+
                 </div>
 
             </div>
+        `;
 
-        </div>
-
-    `).join("");
+    }).join("");
 
 }
+
+// ========================================
+// PENCARIAN PRODUK
+// ========================================
 
 function searchProducts() {
 
-    const keyword = document
-        .getElementById("searchInput")
-        .value
-        .toLowerCase();
+    const searchInput = document.getElementById("searchInput");
 
-    const result = products.filter(product =>
-        product.name.toLowerCase().includes(keyword) ||
-        product.category.toLowerCase().includes(keyword) ||
-        product.location.toLowerCase().includes(keyword)
-    );
+    if (!searchInput) return;
+
+    const keyword = searchInput.value.toLowerCase();
+
+    const result = products.filter(product => {
+
+        const category =
+            product.categories?.name || "";
+
+        return (
+            product.name.toLowerCase().includes(keyword) ||
+            category.toLowerCase().includes(keyword) ||
+            (product.location || "").toLowerCase().includes(keyword)
+        );
+
+    });
 
     renderProducts(result);
 }
+
+// ========================================
+// FILTER KATEGORI
+// ========================================
 
 document.querySelectorAll("[data-category]").forEach(button => {
 
@@ -81,9 +137,14 @@ document.querySelectorAll("[data-category]").forEach(button => {
 
         const category = button.dataset.category;
 
-        const result = products.filter(product =>
-            product.category === category
-        );
+        const result = products.filter(product => {
+
+            const categoryName =
+                product.categories?.name || "";
+
+            return categoryName === category;
+
+        });
 
         renderProducts(result);
 
@@ -91,4 +152,8 @@ document.querySelectorAll("[data-category]").forEach(button => {
 
 });
 
-renderProducts();
+// ========================================
+// MULAI WEBSITE
+// ========================================
+
+loadProducts();
