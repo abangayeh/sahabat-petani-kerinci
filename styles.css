@@ -526,95 +526,20 @@ padding-top: 40px;
         gap: 25px;
     }
 }
-/* CORPORATE FOOTER - WHITE THEME */
+/* CORPORATE FOOTER - CLEAN VERSION */
 
 .corporate-footer {
     background: #ffffff;
     color: #26382e;
+    padding: 55px 0 0;
 }
-
-.corporate-description {
-    color: #66756c;
-}
-
-.corporate-footer h3 {
-    color: #527a5e;
-}
-
-.corporate-tagline {
-    color: #9a7b35;
-}
-
-.business-item strong,
-.corporate-founder strong {
-    color: #26382e;
-}
-
-.business-item p,
-.corporate-founder p {
-    color: #718078;
-}
-
-.corporate-founder {
-    border-left-color: #e5ebe6;
-}
-
-.corporate-bottom {
-    border-top-color: #e5ebe6;
-    color: #87938b;
-}
-/* MEMPERJELAS LOGO SAHABAT PETANI KERINCI */
-
-.business-item img {
-    width: 115px;
-    height: 115px;
-    object-fit: contain;
-    padding: 0;
-    background: transparent;
-    border-radius: 0;
-    flex-shrink: 0;
-}
-
-.business-item {
-    align-items: center;
-    gap: 20px;
-}
-/* SUSUNAN LOGO UNIT USAHA */
-
-.business-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-}
-
-.business-item img {
-    width: 150px;
-    height: 150px;
-    object-fit: contain;
-    padding: 0;
-    margin-bottom: 5px;
-}
-
-.business-item strong {
-    margin-bottom: 7px;
-}
-
-.business-item p {
-    margin-bottom: 0;
-}
-/* FOOTER CORPORATE - LAYOUT KOMPAK */
 
 .corporate-footer-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 0.8fr;
-    gap: 25px;
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    padding-left: 30px;
-    padding-right: 30px;
-    box-sizing: border-box;
+    grid-template-columns: 1.2fr 1fr 0.8fr;
+    gap: 35px;
+    align-items: start;
+    padding-bottom: 45px;
 }
 
 .corporate-about,
@@ -623,47 +548,109 @@ padding-top: 40px;
     min-width: 0;
 }
 
-.corporate-founder {
-    padding-left: 20px;
+.corporate-logo {
+    width: 190px;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-bottom: 20px;
 }
 
-@media (max-width: 800px) {
-    .corporate-footer-grid {
-        grid-template-columns: 1fr;
-        gap: 30px;
-        padding-left: 0;
-        padding-right: 0;
-    }
-
-    .corporate-founder {
-        padding-left: 0;
-    }
-}
-.business-item img {
-    width: 130px;
-    height: 130px;
+.corporate-description {
+    max-width: 340px;
+    color: #66756c;
+    font-size: 13px;
+    line-height: 1.9;
 }
 
-@media (max-width: 800px) {
-    .corporate-footer-grid {
-        grid-template-columns: 1fr;
-        gap: 35px;
-    }
-}
-/* FOOTER LEBIH RAPAT DAN KOMPAK */
-
-.corporate-footer-grid {
-    max-width: 850px;
-    grid-template-columns: 1fr 1fr 0.8fr;
-    gap: 20px;
-    margin-left: auto;
-    margin-right: auto;
+.corporate-tagline {
+    display: inline-block;
+    margin-top: 18px;
+    color: #9a7b35;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
 }
 
-.corporate-founder {
-    padding-left: 15px;
+.corporate-footer h3 {
+    color: #527a5e;
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-bottom: 22px;
 }
 
 .business-item {
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.business-item img {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+}
+
+.business-item strong,
+.corporate-founder strong {
+    display: block;
+    color: #26382e;
+    font-size: 13px;
+    margin-bottom: 7px;
+}
+
+.business-item p,
+.corporate-founder p {
+    color: #718078;
+    font-size: 11px;
+    line-height: 1.8;
+    margin-bottom: 17px;
+}
+
+.corporate-founder {
+    border-left: 1px solid #e5ebe6;
+    padding-left: 25px;
+}
+
+.corporate-bottom {
+    border-top: 1px solid #e5ebe6;
+    padding: 22px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    color: #87938b;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+}
+
+/* RESPONSIVE FOOTER */
+
+@media (max-width: 800px) {
+    .corporate-footer {
+        padding-top: 40px;
+    }
+
+    .corporate-footer-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding-bottom: 35px;
+    }
+
+    .corporate-founder {
+        border-left: none;
+        border-top: 1px solid #e5ebe6;
+        padding-left: 0;
+        padding-top: 25px;
+    }
+
+    .corporate-logo {
+        width: 160px;
+    }
+
+    .corporate-bottom {
+        flex-direction: column;
+        text-align: center;
+        line-height: 1.8;
+    }
 }
