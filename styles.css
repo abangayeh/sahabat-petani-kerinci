@@ -526,3 +526,40 @@ padding-top: 40px;
         gap: 25px;
     }
 }
+/* CORPORATE FOOTER - WHITE THEME */
+
+.corporate-footer {
+    background: #ffffff;
+    color: #26382e;
+}
+
+.corporate-description {
+    color: #66756c;
+}
+
+.corporate-footer h3 {
+    color: #527a5e;
+}
+
+.corporate-tagline {
+    color: #9a7b35;
+}
+
+.business-item strong,
+.corporate-founder strong {
+    color: #26382e;
+}
+
+.business-item p,
+.corporate-founder p {
+    color: #718078;
+}
+
+.corporate-founder {
+    border-left-color: #e5ebe6;
+}
+
+.corporate-bottom {
+    border-top-color: #e5ebe6;
+    color: #87938b;
+}
