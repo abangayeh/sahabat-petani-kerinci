@@ -603,19 +603,42 @@ padding-top: 40px;
 .business-item p {
     margin-bottom: 0;
 }
-/* MENYEIMBANGKAN JARAK FOOTER */
+/* FOOTER CORPORATE - LAYOUT KOMPAK */
 
 .corporate-footer-grid {
-    grid-template-columns: 1fr 1fr 0.9fr;
-    gap: 30px;
-    max-width: 1050px;
-    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr 0.8fr;
+    gap: 25px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding-left: 30px;
+    padding-right: 30px;
+    box-sizing: border-box;
+}
+
+.corporate-about,
+.corporate-business,
+.corporate-founder {
+    min-width: 0;
 }
 
 .corporate-founder {
     padding-left: 20px;
 }
 
+@media (max-width: 800px) {
+    .corporate-footer-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .corporate-founder {
+        padding-left: 0;
+    }
+}
 .business-item img {
     width: 130px;
     height: 130px;
