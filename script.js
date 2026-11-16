@@ -2,9 +2,9 @@
 // SUPABASE CONFIGURATION
 // ========================================
 
-const SUPABASE_URL = "https://ipxywljkorzvyoukfoaw.supabase.co";
+const SUPABASE_URL = "https://pzgjlotpgdmbqfqouihk.supabase.co";
 
-const SUPABASE_KEY = "sb_publishable_K3UGmk7U-eBSUbJ3ysmOlQ_ysM2PMER";
+const SUPABASE_KEY = "sb_publishable_YVctx86LRETCyp8LFE-xPg_DRtOm2dq";
 
 // ========================================
 // MENGAMBIL DATA PRODUK DARI SUPABASE
