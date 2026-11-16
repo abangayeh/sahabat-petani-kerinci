@@ -579,3 +579,27 @@ padding-top: 40px;
     align-items: center;
     gap: 20px;
 }
+/* SUSUNAN LOGO UNIT USAHA */
+
+.business-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.business-item img {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    padding: 0;
+    margin-bottom: 5px;
+}
+
+.business-item strong {
+    margin-bottom: 7px;
+}
+
+.business-item p {
+    margin-bottom: 0;
+}
