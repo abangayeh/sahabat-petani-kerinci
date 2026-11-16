@@ -331,120 +331,81 @@ a {
     font-size: 85px;
 }
 
-/* FOOTER KHAYALAN GRUP */
+/* FOOTER CORPORATE MINIMALIS */
 
 .main-footer {
-    background: #103d2a;
-    color: white;
-    padding-top: 50px;
+    background: #ffffff;
+    color: #26382d;
+    padding-top: 45px;
+    border-top: 1px solid #edf0eb;
 }
 
-.main-footer .container {
+.footer-container {
     text-align: center;
     padding-bottom: 35px;
 }
 
 .group-brand img {
-    width: 190px;
-    max-width: 80%;
+    width: 180px;
+    max-width: 75%;
     height: auto;
-    object-fit: contain;
-    margin-bottom: 12px;
+    display: block;
+    margin: 0 auto 12px;
 }
 
-.group-brand h3 {
-    font-size: 20px;
-    letter-spacing: 2px;
-}
-
-.group-brand p,
-.subsidiary-brand p {
-    font-size: 13px;
-    color: #d5e4d8;
-    margin-top: 8px;
-}
-
-.group-brand span,
-.subsidiary-brand span {
-    display: inline-block;
-    margin-top: 12px;
+.group-brand span {
     font-size: 10px;
     letter-spacing: 2px;
-    color: #c9d99b;
+    color: #9b8750;
+    font-weight: 700;
 }
 
 .footer-divider {
-    width: 70%;
-    max-width: 350px;
-    height: 1px;
-    background: #557663;
-    margin: 35px auto;
+    width: 55px;
+    height: 2px;
+    background: #b69b55;
+    margin: 28px auto;
 }
 
 .subsidiary-brand img {
-    width: 170px;
-    max-width: 75%;
+    width: 155px;
+    max-width: 70%;
     height: auto;
-    object-fit: contain;
-    margin-bottom: 12px;
+    display: block;
+    margin: auto;
 }
 
-.subsidiary-brand h3 {
-    font-size: 17px;
-    letter-spacing: 1px;
+.subsidiary-brand p {
+    font-size: 12px;
+    color: #718075;
+    margin-top: 12px;
 }
 
 .founder-info {
-    margin-top: 40px;
-    padding-top: 25px;
-    border-top: 1px solid #557663;
+    margin-top: 35px;
+    padding-top: 22px;
+    border-top: 1px solid #edf0eb;
 }
 
 .founder-info h4 {
-    margin-bottom: 15px;
-    color: #c9d99b;
+    color: #176b45;
+    font-size: 13px;
+    margin-bottom: 12px;
 }
 
 .founder-info p {
     font-size: 12px;
-    line-height: 1.8;
-    color: #d5e4d8;
+    color: #758078;
+    line-height: 2;
 }
 
 .footer-bottom {
-    background: #0b3020;
+    background: #f7f9f6;
+    border-top: 1px solid #edf0eb;
     text-align: center;
-    padding: 18px 10px;
+    padding: 17px 10px;
     font-size: 11px;
-    color: #cbd9ce;
-}
-
-/* RESPONSIVE FOOTER */
-
-@media(max-width: 480px) {
-    .main-footer {
-        padding-top: 35px;
-    }
-
-    .group-brand img {
-        width: 165px;
-    }
-
-    .subsidiary-brand img {
-        width: 150px;
-    }
-
-    .group-brand h3 {
-        font-size: 18px;
-    }
-
-    .subsidiary-brand h3 {
-        font-size: 15px;
-    }
-
-    .footer-divider {
-        margin: 28px auto;
-    }
+    color: #89928b;
 }
 /* MOBILE */
 
