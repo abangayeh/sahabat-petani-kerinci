@@ -131,7 +131,13 @@ if (loginForm) {
 
             alert("Login berhasil!");
 
-            window.location.href = "../index.html";
+const role = result.user.user_metadata?.role;
+
+if (role === "seller") {
+    window.location.href = "pages/dashboard-penjual.html";
+} else {
+    window.location.href = "../index.html";
+}
 
         } catch (error) {
             console.error("Login Error:", error);
