@@ -351,6 +351,14 @@ footer {
     object-fit: contain;
     margin-bottom: 20px;
 }
+.seller-brand-logo {
+    display: block;
+    width: 180px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 15px;
+}
 
 .footer-content h3,
 .footer-content h4 {
