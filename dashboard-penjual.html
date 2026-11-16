@@ -1,0 +1,46 @@
+<!DOCTYPE html><html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Penjual - Sahabat Petani Kerinci</title>
+  <link rel="stylesheet" href="dashboard-penjual.css">
+</head>
+<body>  <header class="header">
+    <h1>Dashboard Penjual</h1>
+    <button id="logoutBtn">Keluar</button>
+  </header>  <main class="container"><section class="welcome">
+  <h2>Selamat datang, <span id="sellerName">Penjual</span>!</h2>
+  <p>Kelola toko dan produk pertanian Anda di sini.</p>
+</section>
+
+<section class="summary">
+  <div class="card">
+    <h3>Total Produk</h3>
+    <p id="totalProducts">0</p>
+  </div>
+
+  <div class="card">
+    <h3>Menunggu Persetujuan</h3>
+    <p id="pendingProducts">0</p>
+  </div>
+
+  <div class="card">
+    <h3>Produk Aktif</h3>
+    <p id="activeProducts">0</p>
+  </div>
+</section>
+
+<section class="actions">
+  <h2>Kelola Produk</h2>
+  <button id="addProductBtn">+ Tambah Produk</button>
+</section>
+
+<section class="products">
+  <h2>Produk Saya</h2>
+  <div id="productList">
+    <p>Memuat produk...</p>
+  </div>
+</section>
+
+  </main>  <script src="dashboard-penjual.js"></script></body>
+</html>
