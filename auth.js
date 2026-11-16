@@ -56,8 +56,11 @@ if (registerForm) {
                 );
             }
 
-            if (!result.user) {
-                throw new Error("Supabase tidak mengembalikan data pengguna.");
+            const user = result.user || result;
+
+if (!user.id) {
+    throw new Error("Data pengguna tidak ditemukan.");
+}
             }
 
             alert(
