@@ -563,3 +563,19 @@ padding-top: 40px;
     border-top-color: #e5ebe6;
     color: #87938b;
 }
+/* MEMPERJELAS LOGO SAHABAT PETANI KERINCI */
+
+.business-item img {
+    width: 115px;
+    height: 115px;
+    object-fit: contain;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    flex-shrink: 0;
+}
+
+.business-item {
+    align-items: center;
+    gap: 20px;
+}
