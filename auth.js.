@@ -1,0 +1,96 @@
+const SUPABASE_URL = "https://ipxywljkorzvyoukfoaw.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_K3UGmk7U-eBSUbJ3ysmOlQ_ysM2PMER";
+
+// PROSES PENDAFTARAN
+const registerForm = document.getElementById("registerForm");
+
+if (registerForm) {
+  registerForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const role = document.getElementById("role").value;
+
+    try {
+      const response = await fetch(
+        `${SUPABASE_URL}/auth/v1/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_KEY
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            data: {
+              full_name: name,
+              role: role
+            }
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.msg || result.message || result.error_description || "Pendaftaran gagal.");
+      }
+
+      alert("Pendaftaran berhasil! Silakan periksa email untuk verifikasi jika diminta.");
+
+      window.location.href = "login.html";
+
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+}
+
+// PROSES LOGIN
+const loginForm = document.getElementById("loginForm");
+
+if (loginForm) {
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    try {
+      const response = await fetch(
+        `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_KEY
+          },
+          body: JSON.stringify({
+            email,
+            password
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.msg || result.message || result.error_description || "Login gagal.");
+      }
+
+      localStorage.setItem("access_token", result.access_token);
+      localStorage.setItem("user", JSON.stringify(result.user));
+
+      alert("Login berhasil!");
+
+      window.location.href = "../index.html";
+
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+}
