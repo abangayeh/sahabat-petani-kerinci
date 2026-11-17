@@ -28,7 +28,7 @@ let currentUser = null;
 let currentStoreId = null;
 
 // ========================================
-// FUNGSI HEADER SUPABASE
+// HEADER SUPABASE
 // ========================================
 
 function supabaseHeaders() {
@@ -40,18 +40,49 @@ return {
 }
 
 // ========================================
-// CEK LOGIN
+// FUNGSI MEMBACA RESPONS SERVER
+// ========================================
+
+async function readResponse(response, label) {
+const responseText = await response.text();
+
+if (!response.ok) {
+throw new Error(
+"${label} gagal. HTTP ${response.status}: ${responseText.slice(0, 500)}"
+);
+}
+
+try {
+return JSON.parse(responseText);
+} catch (error) {
+console.error("Respons ${label} bukan JSON:", responseText);
+
+throw new Error(
+  `${label} menerima respons bukan JSON. HTTP ${response.status}. Isi respons: ${responseText.slice(0, 300)}`
+);
+
+}
+}
+
+// ========================================
+// CEK LOGIN DAN AKUN PENJUAL
 // ========================================
 
 if (!token || !userData) {
 window.location.href = "login.html";
+
 } else {
 try {
 currentUser = JSON.parse(userData);
 
+if (!currentUser.id) {
+  throw new Error("ID pengguna tidak ditemukan.");
+}
+
 if (currentUser.user_metadata?.role !== "seller") {
   alert("Halaman ini khusus untuk penjual.");
   window.location.href = "../index.html";
+
 } else {
   sellerName.textContent =
     currentUser.user_metadata.full_name || "Penjual";
@@ -60,31 +91,32 @@ if (currentUser.user_metadata?.role !== "seller") {
 }
 
 } catch (error) {
-console.error("Data akun tidak valid:", error);
+console.error("Kesalahan akun:", error);
+
 localStorage.removeItem("access_token");
 localStorage.removeItem("user");
+
 window.location.href = "login.html";
+
 }
 }
 
 // ========================================
-// MENCARI TOKO PENJUAL
+// MENCARI TOKO MILIK PENJUAL
 // ========================================
 
 async function loadStore() {
-const response = await fetch(
-"${SUPABASE_URL}/rest/v1/stores?select=id&owner_id=eq.${encodeURIComponent(currentUser.id)}",
-{
+const url =
+"${SUPABASE_URL}/rest/v1/stores?select=id&owner_id=eq.${encodeURIComponent(currentUser.id)}";
+
+console.log("Memeriksa toko:", url);
+
+const response = await fetch(url, {
+method: "GET",
 headers: supabaseHeaders()
-}
-);
+});
 
-if (!response.ok) {
-const message = await response.text();
-throw new Error("Gagal memuat toko (${response.status}): ${message}");
-}
-
-const stores = await response.json();
+const stores = await readResponse(response, "Memuat toko");
 
 if (!Array.isArray(stores) || stores.length === 0) {
 return null;
@@ -101,32 +133,34 @@ async function loadProducts() {
 try {
 productList.textContent = "Memuat produk...";
 
+totalProducts.textContent = "0";
+pendingProducts.textContent = "0";
+activeProducts.textContent = "0";
+
 currentStoreId = await loadStore();
 
 if (!currentStoreId) {
-  totalProducts.textContent = "0";
-  pendingProducts.textContent = "0";
-  activeProducts.textContent = "0";
-
   productList.textContent =
     "Anda belum memiliki toko. Silakan lengkapi data toko terlebih dahulu.";
 
   return;
 }
 
-const response = await fetch(
-  `${SUPABASE_URL}/rest/v1/products?select=id,name,price,unit,location,status,created_at&store_id=eq.${encodeURIComponent(currentStoreId)}&order=created_at.desc`,
-  {
-    headers: supabaseHeaders()
-  }
-);
+const url =
+  `${SUPABASE_URL}/rest/v1/products?select=id,name,price,unit,location,status,created_at&store_id=eq.${encodeURIComponent(currentStoreId)}&order=created_at.desc`;
 
-if (!response.ok) {
-  const message = await response.text();
-  throw new Error(`Gagal memuat produk (${response.status}): ${message}`);
+console.log("Memuat produk:", url);
+
+const response = await fetch(url, {
+  method: "GET",
+  headers: supabaseHeaders()
+});
+
+const products = await readResponse(response, "Memuat produk");
+
+if (!Array.isArray(products)) {
+  throw new Error("Format data produk tidak sesuai.");
 }
-
-const products = await response.json();
 
 totalProducts.textContent = products.length;
 
@@ -165,11 +199,12 @@ products.forEach(product => {
     "Status: " + (product.status || "Tidak diketahui");
 
   item.append(name, price, location, status);
+
   productList.appendChild(item);
 });
 
 } catch (error) {
-console.error("Gagal memuat produk:", error);
+console.error("Gagal memuat dashboard:", error);
 
 productList.textContent =
   "Terjadi kesalahan: " + error.message;
