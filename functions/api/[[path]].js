@@ -217,7 +217,7 @@ export async function onRequest({ request, env, params }) {
           items: latest.sort((a, b) => a.commodity.localeCompare(b.commodity)),
           history: results || []
         });
-      }}
+      }
       if (!isAdmin) return json({ error: "Sesi admin tidak valid." }, 401);
       if (method === "POST" || (id && method === "PUT")) {
         const body = await readBody(request);
