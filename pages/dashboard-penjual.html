@@ -42,7 +42,6 @@
       <button id="addProductBtn" type="button">+ Tambah Produk</button>
     </section>
 
-    <!-- FORM TAMBAH PRODUK -->
     <section id="productFormSection" class="product-form-section" hidden>
       <h2>Tambah Produk Baru</h2>
 
@@ -59,9 +58,16 @@
         </div>
 
         <div class="form-group">
-          <label for="productCategory">Kategori</label>
-          <select id="productCategory" required>
-            <option value="">Memuat kategori...</option>
+          <label for="productMainCategory">Kategori Utama</label>
+          <select id="productMainCategory" required>
+            <option value="">Memuat kategori utama...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="productCategory">Subkategori</label>
+          <select id="productCategory" required disabled>
+            <option value="">Pilih kategori utama terlebih dahulu</option>
           </select>
         </div>
 
