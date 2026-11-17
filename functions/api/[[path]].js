@@ -29,7 +29,7 @@ async function sha256(value) {
   return base64url(await crypto.subtle.digest("SHA-256", enc.encode(value)));
 }
 
-async function hashPassword(password, salt = base64url(crypto.getRandomValues(new Uint8Array(16))), iterations = 210000) {
+async function hashPassword(password, salt = base64url(crypto.getRandomValues(new Uint8Array(16))), iterations = 100000) {
   const key = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
   const bits = await crypto.subtle.deriveBits(
     { name: "PBKDF2", salt: enc.encode(salt), iterations, hash: "SHA-256" },
@@ -44,7 +44,7 @@ async function verifyPassword(password, stored) {
   const parts = stored.split("$");
   if (parts.length !== 4 || parts[0] !== "pbkdf2") return false;
   const iterations = Number(parts[1]);
-  if (!Number.isInteger(iterations) || iterations < 100000 || iterations > 1000000) return false;
+  if (!Number.isInteger(iterations) || iterations !== 100000) return false;
   return (await hashPassword(password, parts[2], iterations)) === stored;
 }
 
