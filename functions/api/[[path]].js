@@ -145,6 +145,7 @@ export async function onRequest({ request, env, params }) {
       const email = String(body.email || "").trim().toLowerCase();
       const phone = String(body.phone || "").trim();
       const password = typeof body.password === "string" ? body.password : "";
+      const role = body.role === "seller" ? "seller" : "buyer";
       if (name.length < 2 || name.length > 100 ||
           !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
           password.length < 8 || password.length > 200) {
@@ -154,12 +155,12 @@ export async function onRequest({ request, env, params }) {
       if (existing) return json({ error: "Email sudah terdaftar." }, 409);
       const passwordHash = await hashPassword(password);
       const result = await env.DB.prepare(
-        "INSERT INTO users (name,email,phone,password_hash,role,status) VALUES (?,?,?,?,'buyer','active')"
-      ).bind(name, email, phone.slice(0, 30), passwordHash).run();
+        "INSERT INTO users (name,email,phone,password_hash,role,status) VALUES (?,?,?,?,?,'active')"
+      ).bind(name, email, phone.slice(0, 30), passwordHash, role).run();
       const token = await createUserSession(env, result.meta.last_row_id);
       return json({
         ok: true,
-        user: { id: result.meta.last_row_id, name, email, role: "buyer" }
+        user: { id: result.meta.last_row_id, name, email, role }
       }, 201, { "set-cookie": userCookie(token, 604800) });
     }
 
@@ -216,7 +217,7 @@ export async function onRequest({ request, env, params }) {
           items: latest.sort((a, b) => a.commodity.localeCompare(b.commodity)),
           history: results || []
         });
-      }
+      }}
       if (!isAdmin) return json({ error: "Sesi admin tidak valid." }, 401);
       if (method === "POST" || (id && method === "PUT")) {
         const body = await readBody(request);
@@ -327,6 +328,62 @@ export async function onRequest({ request, env, params }) {
       return json({ history: results || [] });
     }
 
+    // PUBLIC PRODUCT CATEGORIES: published crop names from D1
+    if (resource === "categories" && method === "GET") {
+      const { results } = await env.DB.prepare(
+        "SELECT name,MIN(id) AS id FROM crops WHERE status='published' " +
+        "AND TRIM(name)<>'' GROUP BY name ORDER BY name COLLATE NOCASE"
+      ).all();
+      return json({ items: results || [] });
+    }
+
+    // SELLER IMAGE UPLOAD TO PUBLIC SUPABASE STORAGE BUCKET
+    if (resource === "upload-image" && method === "POST") {
+      const user = await currentUser(request, env);
+      if (!user) return json({ error: "Silakan masuk terlebih dahulu." }, 401);
+      if (!["seller", "admin"].includes(user.role)) {
+        return json({ error: "Akun belum memiliki hak penjual." }, 403);
+      }
+      if (!env.SUPABASE_SECRET_KEY) {
+        return json({ error: "Konfigurasi penyimpanan foto belum lengkap di Cloudflare." }, 503);
+      }
+      const form = await request.formData();
+      const file = form.get("image");
+      if (!file || typeof file.arrayBuffer !== "function") {
+        return json({ error: "Pilih foto produk terlebih dahulu." }, 400);
+      }
+      const allowed = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp"
+      };
+      const extension = allowed[file.type];
+      if (!extension) return json({ error: "Format foto harus JPG, PNG, atau WEBP." }, 400);
+      if (file.size < 1 || file.size > 5 * 1024 * 1024) {
+        return json({ error: "Ukuran foto maksimal 5 MB." }, 400);
+      }
+      const projectUrl = "https://pzgjlotpgdmbqfqouihk.supabase.co";
+      const objectPath = `products/${user.id}/${crypto.randomUUID()}.${extension}`;
+      const upload = await fetch(`${projectUrl}/storage/v1/object/produk/${objectPath}`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${env.SUPABASE_SECRET_KEY}`,
+          "apikey": env.SUPABASE_SECRET_KEY,
+          "Content-Type": file.type,
+          "x-upsert": "false",
+          "cache-control": "3600"
+        },
+        body: await file.arrayBuffer()
+      });
+      if (!upload.ok) {
+        const detail = (await upload.text()).slice(0, 300);
+        console.error("Supabase Storage upload failed:", upload.status, detail);
+        return json({ error: "Foto gagal diunggah ke penyimpanan." }, 502);
+      }
+      const imageUrl = `${projectUrl}/storage/v1/object/public/produk/${objectPath}`;
+      return json({ ok: true, image_url: imageUrl, path: objectPath }, 201);
+    }
+
     // PUBLIC MARKETPLACE CATALOG
     if (resource === "products" && method === "GET") {
       if (id) {
@@ -352,7 +409,8 @@ export async function onRequest({ request, env, params }) {
       const user = await currentUser(request, env);
       if (!user) return json({ error: "Silakan masuk terlebih dahulu." }, 401);
       const { results } = await env.DB.prepare(
-        "SELECT * FROM products WHERE seller_id=? ORDER BY created_at DESC"
+        "SELECT p.*, (SELECT image_url FROM product_images pi WHERE pi.product_id=p.id ORDER BY pi.id LIMIT 1) AS image_url " +
+        "FROM products p WHERE p.seller_id=? ORDER BY p.created_at DESC"
       ).bind(user.id).all();
       return json({ items: results || [] });
     }
@@ -364,10 +422,11 @@ export async function onRequest({ request, env, params }) {
 
       if (method === "POST" && !id) {
         const body = await readBody(request);
-        const price = num(body.price), stock = num(body.stock);
+        const price = num(body.price);
+        const stock = body.stock === undefined || body.stock === null || body.stock === "" ? 0 : num(body.stock);
         if (!body.name || !body.category || !Number.isFinite(price) || price < 0 ||
-            !Number.isFinite(stock) || stock < 0) {
-          return json({ error: "Lengkapi nama, kategori, harga, dan stok yang valid." }, 400);
+            !Number.isFinite(stock) || stock < 0 || !body.location) {
+          return json({ error: "Lengkapi nama, kategori, harga, lokasi, dan stok yang valid." }, 400);
         }
         const result = await env.DB.prepare(
           "INSERT INTO products (seller_id,name,category,description,price,unit,stock,location,status) " +
@@ -375,15 +434,20 @@ export async function onRequest({ request, env, params }) {
         ).bind(
           user.id, String(body.name).slice(0, 150), String(body.category).slice(0, 80),
           String(body.description || "").slice(0, 5000), price,
-          String(body.unit || "kg").slice(0, 20), stock, String(body.location || "").slice(0, 150)
+          String(body.unit || "kg").slice(0, 20), stock, String(body.location).slice(0, 150)
         ).run();
-        return json({ ok: true, id: result.meta.last_row_id, status: "pending" }, 201);
+        const productId = result.meta.last_row_id;
+        if (typeof body.image_url === "string" && body.image_url.startsWith("https://pzgjlotpgdmbqfqouihk.supabase.co/storage/v1/object/public/produk/products/")) {
+          await env.DB.prepare(
+            "INSERT INTO product_images (product_id,image_url) VALUES (?,?)"
+          ).bind(productId, body.image_url).run();
+        }
+        return json({ ok: true, id: productId, status: "pending" }, 201);
       }
 
       if (id && method === "PUT") {
         const body = await readBody(request);
-        const price = num(body.price), stock = num(body.stock);
-        if (!body.name || !body.category || !Number.isFinite(price) || price < 0 ||
+        const price = num(body.price), stock = num(body.stock);if (!body.name || !body.category || !Number.isFinite(price) || price < 0 ||
             !Number.isFinite(stock) || stock < 0) {
           return json({ error: "Lengkapi nama, kategori, harga, dan stok yang valid." }, 400);
         }
@@ -407,437 +471,160 @@ export async function onRequest({ request, env, params }) {
       }
     }
 
-    // ADMIN PRODUCT MODERATION// ADMIN PRODUCT MODERATION
+    // ADMIN PRODUCT MODERATION
     if (resource === "admin-products") {
       if (!isAdmin) return json({ error: "Sesi admin tidak valid." }, 401);
-
       if (method === "GET") {
         const { results } = await env.DB.prepare(
-          "SELECT p.*,u.name AS seller_name,u.email AS seller_email " +
-          "FROM products p JOIN users u ON u.id=p.seller_id " +
-          "ORDER BY p.created_at DESC LIMIT 200"
+          "SELECT p.*,u.name AS seller_name FROM products p JOIN users u ON u.id=p.seller_id ORDER BY p.created_at DESC LIMIT 200"
         ).all();
         return json({ items: results || [] });
       }
-
       if (id && method === "PUT") {
         const body = await readBody(request);
-        const status = String(body.status || "");
-        if (!["pending", "published", "rejected"].includes(status)) {
+        if (!["pending", "published", "rejected"].includes(body.status)) {
           return json({ error: "Status tidak valid." }, 400);
         }
         const result = await env.DB.prepare(
           "UPDATE products SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?"
-        ).bind(status, Number(id)).run();
-        return result.meta.changes
-          ? json({ ok: true, status })
-          : json({ error: "Produk tidak ditemukan." }, 404);
+        ).bind(body.status, Number(id)).run();
+        return result.meta.changes ? json({ ok: true }) : json({ error: "Produk tidak ditemukan." }, 404);
       }
-
       if (id && method === "DELETE") {
-        const result = await env.DB.prepare(
-          "DELETE FROM products WHERE id=?"
-        ).bind(Number(id)).run();
-        return result.meta.changes ? json({ ok: true }) : json({ error: "Data harga tidak ditemukan." }, 404);
-}
-}
-
-// LEGACY CROPS API  
-if (resource === "crops") {  
-  if (method === "GET") {  
-    const { results } = await env.DB.prepare("SELECT * FROM crops ORDER BY name,variety").all();  
-    return json({ items: results || [] });  
-  }  
-  if (!isAdmin) return json({ error: "Sesi admin tidak valid." }, 401);  
-  const body = await readBody(request);  
-  if (method === "POST") {  
-    if (!body.name) return json({ error: "Nama komoditas wajib diisi." }, 400);  
-    await env.DB.prepare(  
-      "INSERT INTO crops (name,variety,description,status) VALUES (?,?,?,?)"  
-    ).bind(  
-      String(body.name).slice(0, 80), String(body.variety || "").slice(0, 100),  
-      String(body.description || "").slice(0, 5000),  
-      body.status === "published" ? "published" : "draft"  
-    ).run();  
-    return json({ ok: true }, 201);  
-  }  
-  if (id && method === "PUT") {  
-    const result = await env.DB.prepare(  
-      "UPDATE crops SET name=?,variety=?,description=?,status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?"  
-    ).bind(  
-      String(body.name || "").slice(0, 80), String(body.variety || "").slice(0, 100),  
-      String(body.description || "").slice(0, 5000),  
-      body.status === "published" ? "published" : "draft", Number(id)  
-    ).run();  
-    return result.meta.changes ? json({ ok: true }) : json({ error: "Komoditas tidak ditemukan." }, 404);  
-  }  
-  if (id && method === "DELETE") {  
-    const result = await env.DB.prepare("DELETE FROM crops WHERE id=?").bind(Number(id)).run();  
-    return result.meta.changes ? json({ ok: true }) : json({ error: "Komoditas tidak ditemukan." }, 404);  
-  }  
-}  
-
-// LEGACY NEWS API  
-if (resource === "news") {  
-  if (method === "GET") {  
-    const query = isAdmin  
-      ? "SELECT * FROM news ORDER BY date DESC,id DESC LIMIT 100"  
-      : "SELECT * FROM news WHERE status='published' ORDER BY date DESC,id DESC LIMIT 50";  
-    const { results } = await env.DB.prepare(query).all();  
-    return json({ items: results || [] });  
-  }  
-  if (!isAdmin) return json({ error: "Sesi admin tidak valid." }, 401);  
-  const body = await readBody(request);  
-  if (method === "POST") {  
-    if (!body.title || !body.summary || !body.date) {  
-      return json({ error: "Judul, ringkasan, dan tanggal wajib diisi." }, 400);  
-    }  
-    await env.DB.prepare(  
-      "INSERT INTO news (title,summary,date,status) VALUES (?,?,?,?)"  
-    ).bind(  
-      String(body.title).slice(0, 180), String(body.summary).slice(0, 2000),  
-      String(body.date), body.status === "published" ? "published" : "draft"  
-    ).run();  
-    return json({ ok: true }, 201);  
-  }  
-  if (id && method === "PUT") {  
-    const result = await env.DB.prepare(  
-      "UPDATE news SET title=?,summary=?,date=?,status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?"  
-    ).bind(  
-      String(body.title || "").slice(0, 180), String(body.summary || "").slice(0, 2000),  
-      String(body.date || ""), body.status === "published" ? "published" : "draft", Number(id)  
-    ).run();  
-    return result.meta.changes ? json({ ok: true }) : json({ error: "Berita tidak ditemukan." }, 404);  
-  }  
-  if (id && method === "DELETE") {  
-    const result = await env.DB.prepare("DELETE FROM news WHERE id=?").bind(Number(id)).run();  
-    return result.meta.changes ? json({ ok: true }) : json({ error: "Berita tidak ditemukan." }, 404);  
-  }  
-}  
-
-if (resource === "stats" && method === "GET") {  
-  const { results } = await env.DB.prepare(  
-    "SELECT commodity,price,unit,date,location,source FROM prices ORDER BY date ASC,id ASC LIMIT 2000"  
-  ).all();  
-  return json({ history: results || [] });  
-}  
-
-// PUBLIC MARKETPLACE CATALOG  
-if (resource === "products" && method === "GET") {  
-  if (id) {  
-    const product = await env.DB.prepare(  
-      "SELECT p.*,u.name AS seller_name FROM products p JOIN users u ON u.id=p.seller_id " +  
-      "WHERE p.id=? AND p.status='published' LIMIT 1"  
-    ).bind(Number(id)).first();  
-    if (!product) return json({ error: "Produk tidak ditemukan." }, 404);  
-    const { results: images } = await env.DB.prepare(  
-      "SELECT id,image_url FROM product_images WHERE product_id=? ORDER BY id"  
-    ).bind(Number(id)).all();  
-    return json({ product, images: images || [] });  
-  }  
-  const { results } = await env.DB.prepare(  
-    "SELECT p.id,p.seller_id,p.name,p.category,p.description,p.price,p.unit,p.stock,p.location,p.created_at,u.name AS seller_name " +  
-    "FROM products p JOIN users u ON u.id=p.seller_id " +  
-    "WHERE p.status='published' ORDER BY p.created_at DESC LIMIT 100"  
-  ).all();  
-  return json({ items: results || [] });  
-}  
-
-if (resource === "my-products" && method === "GET") {  
-  const user = await currentUser(request, env);  
-  if (!user) return json({ error: "Silakan masuk terlebih dahulu." }, 401);  
-  const { results } = await env.DB.prepare(  
-    "SELECT * FROM products WHERE seller_id=? ORDER BY created_at DESC"  
-  ).bind(user.id).all();  
-  return json({ items: results || [] });  
-}  
-
-if (resource === "products" && !["GET", "HEAD"].includes(method)) {  
-  const user = await currentUser(request, env);  
-  if (!user) return json({ error: "Silakan masuk terlebih dahulu." }, 401);  
-  if (!["seller", "admin"].includes(user.role)) return json({ error: "Akun belum memiliki hak penjual." }, 403);  
-
-  if (method === "POST" && !id) {  
-    const body = await readBody(request);  
-    const price = num(body.price), stock = num(body.stock);  
-    if (!body.name || !body.category || !Number.isFinite(price) || price < 0 ||  
-        !Number.isFinite(stock) || stock < 0) {  
-      return json({ error: "Lengkapi nama, kategori, harga, dan stok yang valid." }, 400);  
-    }  
-    const result = await env.DB.prepare(  
-      "INSERT INTO products (seller_id,name,category,description,price,unit,stock,location,status) " +  
-      "VALUES (?,?,?,?,?,?,?,?, 'pending')"  
-    ).bind(  
-      user.id, String(body.name).slice(0, 150), String(body.category).slice(0, 80),  
-      String(body.description || "").slice(0, 5000), price,  
-      String(body.unit || "kg").slice(0, 20), stock, String(body.location || "").slice(0, 150)  
-    ).run();  
-    return json({ ok: true, id: result.meta.last_row_id, status: "pending" }, 201);  
-  }  
-
-  if (id && method === "PUT") {  
-    const body = await readBody(request);  
-    const price = num(body.price), stock = num(body.stock);  
-    if (!body.name || !body.category || !Number.isFinite(price) || price < 0 ||  
-        !Number.isFinite(stock) || stock < 0) {  
-      return json({ error: "Lengkapi nama, kategori, harga, dan stok yang valid." }, 400);  
-    }  
-    const result = await env.DB.prepare(  
-      "UPDATE products SET name=?,category=?,description=?,price=?,unit=?,stock=?,location=?," +  
-      "status='pending',updated_at=CURRENT_TIMESTAMP WHERE id=? AND seller_id=?"  
-    ).bind(  
-      String(body.name).slice(0, 150), String(body.category).slice(0, 80),  
-      String(body.description || "").slice(0, 5000), price,  
-      String(body.unit || "kg").slice(0, 20), stock,  
-      String(body.location || "").slice(0, 150), Number(id), user.id  
-    ).run();  
-    return result.meta.changes ? json({ ok: true, status: "pending" }) : json({ error: "Produk tidak ditemukan." }, 404);  
-  }  
-
-  if (id && method === "DELETE") {  
-    const result = await env.DB.prepare(  
-      "DELETE FROM products WHERE id=? AND seller_id=?"  
-    ).bind(Number(id), user.id).run();  
-    return result.meta.changes ? json({ ok: true }) : json({ error: "Produk tidak ditemukan." }, 404);  
-  }  
-}  
-
-// ADMIN PRODUCT MODERATION// ADMIN PRODUCT MODERATION  
-if (resource === "admin-products") {  
-  if (!isAdmin) return json({ error: "Sesi admin tidak valid." }, 401);  
-
-  if (method === "GET") {  
-    const { results } = await env.DB.prepare(  
-      "SELECT p.*,u.name AS seller_name,u.email AS seller_email " +  
-      "FROM products p JOIN users u ON u.id=p.seller_id " +  
-      "ORDER BY p.created_at DESC LIMIT 200"  
-    ).all();  
-    return json({ items: results || [] });  
-  }  
-
-  if (id && method === "PUT") {  
-    const body = await readBody(request);  
-    const status = String(body.status || "");  
-    if (!["pending", "published", "rejected"].includes(status)) {  
-      return json({ error: "Status tidak valid." }, 400);  
-    }  
-    const result = await env.DB.prepare(  
-      "UPDATE products SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?"  
-    ).bind(status, Number(id)).run();  
-    return result.meta.changes  
-      ? json({ ok: true, status })  
-      : json({ error: "Produk tidak ditemukan." }, 404);  
-  }  
-
-  if (id && method === "DELETE") {  
-    const result = await env.DB.prepare(  
-      "DELETE FROM products WHERE id=?"  
-    ).bind(Number(id)).run();  
-    return result.meta.changes  
-      ? json({ ok: true })  
-      : json({ error: "Produk tidak ditemukan." }, 404);  
-  }  
-}  
-
-// FAVORITES  
-if (resource === "favorites") {  
-  const user = await currentUser(request, env);  
-  if (!user) return json({ error: "Silakan masuk terlebih dahulu." }, 401);  
-
-  if (method === "GET") {  
-    const { results } = await env.DB.prepare(  
-      "SELECT p.*,u.name AS seller_name " +  
-      "FROM favorites f JOIN products p ON p.id=f.product_id " +  
-      "JOIN users u ON u.id=p.seller_id " +  
-      "WHERE f.user_id=? ORDER BY f.created_at DESC"  
-    ).bind(user.id).all();  
-    return json({ items: results || [] });  
-  }  
-
-  if (method === "POST") {  
-    const body = await readBody(request);  
-    const productId = Number(body.product_id);  
-    if (!Number.isInteger(productId) || productId <= 0) {  
-      return json({ error: "ID produk tidak valid." }, 400);  
-    }  
-    const product = await env.DB.prepare(  
-      "SELECT id FROM products WHERE id=? AND status='published'"  
-    ).bind(productId).first();  
-    if (!product) return json({ error: "Produk tidak ditemukan." }, 404);  
-
-    await env.DB.prepare(  
-      "INSERT OR IGNORE INTO favorites (user_id,product_id) VALUES (?,?)"  
-    ).bind(user.id, productId).run();  
-    return json({ ok: true });  
-  }  
-
-  if (method === "DELETE") {  
-    const productId = Number(id);  
-    if (!Number.isInteger(productId) || productId <= 0) {  
-      return json({ error: "ID produk tidak valid." }, 400);  
-    }  
-    await env.DB.prepare(  
-      "DELETE FROM favorites WHERE user_id=? AND product_id=?"  
-    ).bind(user.id, productId).run();  
-    return json({ ok: true });  
-  }  
-}  
-
-// PRIVATE MESSAGES  
-if (resource === "messages") {  
-  const user = await currentUser(request, env);  
-  if (!user) return json({ error: "Silakan masuk terlebih dahulu." }, 401);  
-
-  if (method === "GET") {  
-    const otherId = Number(id);  
-    if (!Number.isInteger(otherId) || otherId <= 0) {  
-      return json({ error: "ID pengguna tidak valid." }, 400);  
-    }  
-    const { results } = await env.DB.prepare(  
-      "SELECT m.*,s.name AS sender_name,r.name AS receiver_name " +  
-      "FROM messages m " +  
-      "JOIN users s ON s.id=m.sender_id " +  
-      "JOIN users r ON r.id=m.receiver_id " +  
-      "WHERE (m.sender_id=? AND m.receiver_id=?) " +  
-      "OR (m.sender_id=? AND m.receiver_id=?) " +  
-      "ORDER BY m.created_at ASC LIMIT 200"  
-    ).bind(user.id, otherId, otherId, user.id).all();  
-    return json({ items: results || [] });  
-  }  
-
-  if (method === "POST") {  
-    const body = await readBody(request);  
-    const receiverId = Number(body.receiver_id);  
-    const productId = body.product_id ? Number(body.product_id) : null;  
-    const message = String(body.message || "").trim();  
-
-    if (!Number.isInteger(receiverId) || receiverId <= 0 ||  
-        receiverId === user.id || !message || message.length > 2000) {  
-      return json({ error: "Penerima atau isi pesan tidak valid." }, 400);  
-    }  
-
-    const receiver = await env.DB.prepare(  
-      "SELECT id FROM users WHERE id=? AND status='active'"  
-    ).bind(receiverId).first();  
-    if (!receiver) return json({ error: "Pengguna penerima tidak ditemukan." }, 404);  
-
-    if (productId !== null) {  
-      const product = await env.DB.prepare(  
-        "SELECT id FROM products WHERE id=? AND status='published'"  
-      ).bind(productId).first();  
-      if (!product) return json({ error: "Produk tidak ditemukan." }, 404);  
-    }  
-
-    await env.DB.prepare(  
-      "INSERT INTO messages (sender_id,receiver_id,product_id,message) VALUES (?,?,?,?)"  
-    ).bind(user.id, receiverId, productId, message).run();  
-
-    return json({ ok: true }, 201);  
-  }  
-}  
-
-// ORDERS  
-if (resource === "orders") {  
-  const user = await currentUser(request, env);  
-  if (!user) return json({ error: "Silakan masuk terlebih dahulu." }, 401);  
-
-  if (method === "GET") {  
-    if (user.role === "admin") {  
-      const { results } = await env.DB.prepare(  
-        "SELECT o.*,u.name AS buyer_name " +  
-        "FROM orders o JOIN users u ON u.id=o.buyer_id " +  
-        "ORDER BY o.created_at DESC LIMIT 200"  
-      ).all();  
-      return json({ items: results || [] });  
-    }  
-
-    const { results } = await env.DB.prepare(  
-      "SELECT DISTINCT o.*,u.name AS buyer_name " +  
-      "FROM orders o JOIN users u ON u.id=o.buyer_id " +  
-      "LEFT JOIN order_items oi ON oi.order_id=o.id " +  
-      "WHERE o.buyer_id=? OR oi.seller_id=? " +  
-      "ORDER BY o.created_at DESC LIMIT 200"  
-    ).bind(user.id, user.id).all();  
-
-    return json({ items: results || [] });  
-  }  
-
-  if (method === "POST") {  
-    const body = await readBody(request);  
-    const productId = Number(body.product_id);  
-    const quantity = num(body.quantity);  
-    const address = String(body.delivery_address || "").trim();  
-    const notes = String(body.notes || "").trim();  
-
-    if (!Number.isInteger(productId) || productId <= 0 ||  
-        !Number.isFinite(quantity) || quantity <= 0 || quantity > 100000 ||  
-        !address || address.length > 1000 || notes.length > 2000) {  
-      return json({ error: "Data pesanan tidak valid." }, 400);  
-    }  
-
-    const product = await env.DB.prepare(  
-      "SELECT id,seller_id,name,price,stock,status " +  
-      "FROM products WHERE id=? AND status='published'"  
-    ).bind(productId).first();  
-
-    if (!product) return json({ error: "Produk tidak ditemukan." }, 404);  
-    if (product.seller_id === user.id) {  
-      return json({ error: "Kamu tidak dapat membeli produk sendiri." }, 400);  
-    }  
-    if (Number(product.stock) < quantity) {  
-      return json({ error: "Stok produk tidak mencukupi." }, 400);  
-    }  
-
-    const price = Number(product.price);  
-    const total = price * quantity;  
-
-    if (!Number.isFinite(total) || total <= 0) {  
-      return json({ error: "Harga produk tidak valid." }, 400);  
-    }  
-
-    const stockUpdate = await env.DB.prepare(  
-      "UPDATE products SET stock=stock-?,updated_at=CURRENT_TIMESTAMP " +  
-      "WHERE id=? AND stock>=? AND status='published'"  
-    ).bind(quantity, productId, quantity).run();  
-
-    if (!stockUpdate.meta.changes) {  
-      return json({ error: "Stok baru saja berubah. Silakan coba lagi." }, 409);  
-    }  
-
-    try {  
-      const orderResult = await env.DB.prepare(  
-        "INSERT INTO orders (buyer_id,total,status,delivery_address,notes) " +  
-        "VALUES (?,?, 'pending',?,?)"  
-      ).bind(user.id, total, address, notes).run();  
-
-      const orderId = orderResult.meta.last_row_id;  
-
-      await env.DB.prepare(  
-        "INSERT INTO order_items (order_id,product_id,seller_id,quantity,price,subtotal) " +  
-        "VALUES (?,?,?,?,?,?)"  
-      ).bind(  
-        orderId, productId, product.seller_id, quantity, price, total  
-      ).run();  
-
-      return json({  
-        ok: true,  
-        order_id: orderId,  
-        total,  
-        status: "pending"  
-      }, 201);  
-    } catch (error) {  
-      await env.DB.prepare(  
-        "UPDATE products SET stock=stock+? WHERE id=?"  
-      ).bind(quantity, productId).run();  
-      throw error;  
-    }  
-  }  
-}  
-
-return json({ error: "Endpoint tidak ditemukan." }, 404);
-
-} catch (error) {
-console.error("SPK API error:", error);
-return json({ error: "Terjadi kesalahan pada server." }, 500);
-}
+        const result = await env.DB.prepare("DELETE FROM products WHERE id=?").bind(Number(id)).run();
+        return result.meta.changes ? json({ ok: true }) : json({ error: "Produk tidak ditemukan." }, 404);
       }
+    }
+
+    // FAVORITES
+    if (resource === "favorites") {
+      const user = await currentUser(request, env);
+      if (!user) return json({ error: "Silakan masuk terlebih dahulu." }, 401);
+      if (method === "GET") {
+        const { results } = await env.DB.prepare(
+          "SELECT p.*,u.name AS seller_name FROM favorites f " +
+          "JOIN products p ON p.id=f.product_id JOIN users u ON u.id=p.seller_id " +
+          "WHERE f.user_id=? ORDER BY f.created_at DESC"
+        ).bind(user.id).all();
+        return json({ items: results || [] });
+      }
+      if (method === "POST") {
+        const body = await readBody(request);
+        const productId = Number(body.product_id);
+        const product = await env.DB.prepare(
+          "SELECT id FROM products WHERE id=? AND status='published'"
+        ).bind(productId).first();
+        if (!product) return json({ error: "Produk tidak ditemukan." }, 404);
+        await env.DB.prepare(
+          "INSERT OR IGNORE INTO favorites (user_id,product_id) VALUES (?,?)"
+        ).bind(user.id, productId).run();
+        return json({ ok: true });
+      }
+      if (id && method === "DELETE") {
+        await env.DB.prepare(
+          "DELETE FROM favorites WHERE user_id=? AND product_id=?"
+        ).bind(user.id, Number(id)).run();
+        return json({ ok: true });
+      }
+    }
+
+    // BUYER / SELLER MESSAGES
+    if (resource === "messages") {
+      const user = await currentUser(request, env);
+      if (!user) return json({ error: "Silakan masuk terlebih dahulu." }, 401);
+      if (method === "GET") {
+        const { results } = await env.DB.prepare(
+          "SELECT m.*,s.name AS sender_name,r.name AS receiver_name FROM messages m " +
+          "JOIN users s ON s.id=m.sender_id JOIN users r ON r.id=m.receiver_id " +
+          "WHERE m.sender_id=? OR m.receiver_id=? ORDER BY m.created_at DESC LIMIT 200"
+        ).bind(user.id, user.id).all();
+        return json({ items: results || [] });
+      }
+      if (method === "POST") {
+        const body = await readBody(request);
+        const receiverId = Number(body.receiver_id);
+        const productId = body.product_id ? Number(body.product_id) : null;
+        const message = String(body.message || "").trim();
+        if (!Number.isInteger(receiverId) || receiverId === user.id ||
+            !message || message.length > 2000) {
+          return json({ error: "Penerima dan pesan (maksimal 2.000 karakter) wajib diisi." }, 400);
+        }
+        const receiver = await env.DB.prepare(
+          "SELECT id FROM users WHERE id=? AND status='active'"
+        ).bind(receiverId).first();
+        if (!receiver) return json({ error: "Penerima tidak ditemukan." }, 404);
+        if (productId) {
+          const product = await env.DB.prepare("SELECT id FROM products WHERE id=?").bind(productId).first();
+          if (!product) return json({ error: "Produk tidak ditemukan." }, 404);
+        }
+        await env.DB.prepare(
+          "INSERT INTO messages (sender_id,receiver_id,product_id,message) VALUES (?,?,?,?)"
+        ).bind(user.id, receiverId, productId, message).run();
+        return json({ ok: true }, 201);
+      }
+    }
+
+    // ORDERS - MVP: ONE PRODUCT PER ORDER; PAYMENT NOT INCLUDED
+    if (resource === "orders") {
+      const user = await currentUser(request, env);
+      if (!user) return json({ error: "Silakan masuk terlebih dahulu." }, 401);
+
+      if (method === "GET") {
+        const { results } = await env.DB.prepare(
+          "SELECT o.*,oi.product_id,oi.seller_id,oi.quantity,oi.price,oi.subtotal,p.name AS product_name " +
+          "FROM orders o JOIN order_items oi ON oi.order_id=o.id " +
+          "JOIN products p ON p.id=oi.product_id " +
+          "WHERE o.buyer_id=? OR oi.seller_id=? ORDER BY o.created_at DESC LIMIT 200"
+        ).bind(user.id, user.id).all();
+        return json({ items: results || [] });
+      }
+
+      if (method === "POST") {
+        const body = await readBody(request);
+        const productId = Number(body.product_id), quantity = num(body.quantity);
+        if (!Number.isInteger(productId) || !Number.isFinite(quantity) || quantity <= 0) {
+          return json({ error: "Produk dan jumlah pesanan harus valid." }, 400);
+        }
+        const product = await env.DB.prepare(
+          "SELECT * FROM products WHERE id=? AND status='published'"
+        ).bind(productId).first();
+        if (!product) return json({ error: "Produk tidak ditemukan." }, 404);
+        if (product.seller_id === user.id) return json({ error: "Tidak bisa memesan produk sendiri." }, 400);
+
+        const reserve = await env.DB.prepare(
+          "UPDATE products SET stock=stock-?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='published' AND stock>=?"
+        ).bind(quantity, productId, quantity).run();
+        if (reserve.meta.changes !== 1) return json({ error: "Stok tidak mencukupi. Silakan periksa kembali." }, 409);
+
+        try {
+          const total = Number(product.price) * quantity;
+          const order = await env.DB.prepare(
+            "INSERT INTO orders (buyer_id,total,status,delivery_address,notes) VALUES (?,?,'pending',?,?)"
+          ).bind(
+            user.id, total, String(body.address || "").slice(0, 500),
+            String(body.notes || "").slice(0, 1000)
+          ).run();
+          await env.DB.prepare(
+            "INSERT INTO order_items (order_id,product_id,seller_id,quantity,price,subtotal) VALUES (?,?,?,?,?,?)"
+          ).bind(order.meta.last_row_id, product.id, product.seller_id, quantity, product.price, total).run();
+          return json({ ok: true, order_id: order.meta.last_row_id, total }, 201);
+        } catch (error) {
+          await env.DB.prepare(
+            "UPDATE products SET stock=stock+?,updated_at=CURRENT_TIMESTAMP WHERE id=?"
+          ).bind(quantity, productId).run();
+          throw error;
+        }
+      }
+    }
+
+    if (resource === "profile" && method === "GET") {
+      const user = await currentUser(request, env);
+      return user ? json({ user }) : json({ error: "Silakan masuk terlebih dahulu." }, 401);
+    }
+
+    return json({ error: "Endpoint tidak ditemukan." }, 404);
+  } catch (error) {
+    console.error("SPK API error:", error);
+    return json({ error: "Terjadi kesalahan server. Silakan coba kembali." }, 500);
+  }
+}
