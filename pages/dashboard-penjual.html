@@ -1,44 +1,147 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Penjual - Sahabat Petani Kerinci</title>
   <link rel="stylesheet" href="dashboard-penjual.css">
 </head>
-<body>  <header class="header">
+<body>
+
+  <header class="header">
     <h1>Dashboard Penjual</h1>
     <button id="logoutBtn">Keluar</button>
-  </header>  <main class="container"><section class="welcome">
-  <h2>Selamat datang, <span id="sellerName">Penjual</span>!</h2>
-  <p>Kelola toko dan produk Anda di sini.</p>
-</section>
+  </header>
 
-<section class="summary">
-  <div class="card">
-    <h3>Total Produk</h3>
-    <p id="totalProducts">0</p>
-  </div>
+  <main class="container">
 
-  <div class="card">
-    <h3>Menunggu Persetujuan</h3>
-    <p id="pendingProducts">0</p>
-  </div>
+    <section class="welcome">
+      <h2>Selamat datang, <span id="sellerName">Penjual</span>!</h2>
+      <p>Kelola toko dan produk Anda di sini.</p>
+    </section>
 
-  <div class="card">
-    <h3>Produk Aktif</h3>
-    <p id="activeProducts">0</p>
-  </div>
-</section>
+    <section class="summary">
+      <div class="card">
+        <h3>Total Produk</h3>
+        <p id="totalProducts">0</p>
+      </div>
 
-<section class="actions">
-  <h2>Kelola Produk</h2>
-  <button id="addProductBtn">+ Tambah Produk</button>
-</section>
+      <div class="card">
+        <h3>Menunggu Persetujuan</h3>
+        <p id="pendingProducts">0</p>
+      </div>
 
-<section class="products">
-  <h2>Produk Saya</h2>
-  <div id="productList">Memuat produk...</div>
-</section>
+      <div class="card">
+        <h3>Produk Aktif</h3>
+        <p id="activeProducts">0</p>
+      </div>
+    </section>
 
-  </main>  <script src="dashboard-penjual.js"></script></body>
+    <section class="actions">
+      <h2>Kelola Produk</h2>
+      <button id="addProductBtn" type="button">+ Tambah Produk</button>
+    </section>
+
+    <!-- FORM TAMBAH PRODUK -->
+    <section id="productFormSection" class="product-form-section" hidden>
+      <h2>Tambah Produk Baru</h2>
+
+      <form id="productForm">
+
+        <div class="form-group">
+          <label for="productName">Nama Produk</label>
+          <input
+            type="text"
+            id="productName"
+            required
+            placeholder="Contoh: Kentang Granola"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="productCategory">Kategori</label>
+          <select id="productCategory" required>
+            <option value="">Memuat kategori...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="productPrice">Harga (Rp)</label>
+          <input
+            type="number"
+            id="productPrice"
+            min="1"
+            required
+            placeholder="Contoh: 15000"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="productUnit">Satuan</label>
+          <select id="productUnit" required>
+            <option value="">Pilih satuan</option>
+            <option value="kg">Kilogram (kg)</option>
+            <option value="gram">Gram</option>
+            <option value="ikat">Ikat</option>
+            <option value="buah">Buah</option>
+            <option value="karung">Karung</option>
+            <option value="ton">Ton</option>
+            <option value="liter">Liter</option>
+            <option value="paket">Paket</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="productLocation">Lokasi Produk</label>
+          <input
+            type="text"
+            id="productLocation"
+            required
+            placeholder="Contoh: Kayu Aro, Kerinci"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="productDescription">Deskripsi Produk</label>
+          <textarea
+            id="productDescription"
+            rows="4"
+            placeholder="Jelaskan kondisi dan kualitas produk..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="productImage">Foto Produk</label>
+          <input
+            type="file"
+            id="productImage"
+            accept="image/jpeg,image/png,image/webp"
+            required
+          >
+          <small>Format JPG, PNG, atau WEBP. Maksimal 5 MB.</small>
+        </div>
+
+        <div id="formMessage"></div>
+
+        <button type="submit" id="submitProductBtn">
+          Simpan Produk
+        </button>
+
+        <button type="button" id="cancelProductBtn">
+          Batal
+        </button>
+
+      </form>
+    </section>
+
+    <section class="products">
+      <h2>Produk Saya</h2>
+      <div id="productList">Memuat produk...</div>
+    </section>
+
+  </main>
+
+  <script src="dashboard-penjual.js"></script>
+
+</body>
 </html>
