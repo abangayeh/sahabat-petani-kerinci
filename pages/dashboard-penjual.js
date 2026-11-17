@@ -8,140 +8,206 @@ const SUPABASE_KEY = "sb_publishable_YVctx86LRETCyp8LFE-xPg_DRtOm2dq";
 const token = localStorage.getItem("access_token");
 const userData = localStorage.getItem("user");
 
+// ========================================
+// ELEMEN HALAMAN
+// ========================================
+
 const productList = document.getElementById("productList");
+const sellerName = document.getElementById("sellerName");
+
+const totalProducts = document.getElementById("totalProducts");
+const pendingProducts = document.getElementById("pendingProducts");
+const activeProducts = document.getElementById("activeProducts");
+
+const addProductBtn = document.getElementById("addProductBtn");
+const productFormSection = document.getElementById("productFormSection");
+const productForm = document.getElementById("productForm");
+const cancelProductBtn = document.getElementById("cancelProductBtn");
+
+let currentUser = null;
+let currentStoreId = null;
 
 // ========================================
-// CEK LOGIN DAN AKUN PENJUAL
+// FUNGSI HEADER SUPABASE
+// ========================================
+
+function supabaseHeaders() {
+return {
+"apikey": SUPABASE_KEY,
+"Authorization": "Bearer ${token}",
+"Content-Type": "application/json"
+};
+}
+
+// ========================================
+// CEK LOGIN
 // ========================================
 
 if (!token || !userData) {
-  window.location.href = "login.html";
+window.location.href = "login.html";
 } else {
-  const user = JSON.parse(userData);
+try {
+currentUser = JSON.parse(userData);
 
-  if (user.user_metadata?.role !== "seller") {
-    alert("Halaman ini khusus untuk penjual.");
-    window.location.href = "../index.html";
-  } else {
-    document.getElementById("sellerName").textContent =
-      user.user_metadata.full_name || "Penjual";
+if (currentUser.user_metadata?.role !== "seller") {
+  alert("Halaman ini khusus untuk penjual.");
+  window.location.href = "../index.html";
+} else {
+  sellerName.textContent =
+    currentUser.user_metadata.full_name || "Penjual";
 
-    loadProducts(user);
-  }
+  loadProducts();
+}
+
+} catch (error) {
+console.error("Data akun tidak valid:", error);
+localStorage.removeItem("access_token");
+localStorage.removeItem("user");
+window.location.href = "login.html";
+}
+}
+
+// ========================================
+// MENCARI TOKO PENJUAL
+// ========================================
+
+async function loadStore() {
+const response = await fetch(
+"${SUPABASE_URL}/rest/v1/stores?select=id&owner_id=eq.${encodeURIComponent(currentUser.id)}",
+{
+headers: supabaseHeaders()
+}
+);
+
+if (!response.ok) {
+const message = await response.text();
+throw new Error("Gagal memuat toko (${response.status}): ${message}");
+}
+
+const stores = await response.json();
+
+if (!Array.isArray(stores) || stores.length === 0) {
+return null;
+}
+
+return stores[0].id;
 }
 
 // ========================================
 // MEMUAT PRODUK PENJUAL
 // ========================================
 
-async function loadProducts(user) {
-  try {
+async function loadProducts() {
+try {
+productList.textContent = "Memuat produk...";
 
-    // Cari toko milik penjual
-    const storeResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/stores?select=id&owner_id=eq.${user.id}`,
-      {
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${token}`
-        }
-      }
-    );
+currentStoreId = await loadStore();
 
-    if (!storeResponse.ok) {
-      throw new Error(await storeResponse.text());
-    }
+if (!currentStoreId) {
+  totalProducts.textContent = "0";
+  pendingProducts.textContent = "0";
+  activeProducts.textContent = "0";
 
-    const stores = await storeResponse.json();
+  productList.textContent =
+    "Anda belum memiliki toko. Silakan lengkapi data toko terlebih dahulu.";
 
-    if (stores.length === 0) {
-      document.getElementById("totalProducts").textContent = "0";
-      document.getElementById("pendingProducts").textContent = "0";
-      document.getElementById("activeProducts").textContent = "0";
+  return;
+}
 
-      productList.textContent =
-        "Anda belum memiliki toko. Silakan lengkapi data toko terlebih dahulu.";
-
-      return;
-    }
-
-    const storeId = stores[0].id;
-
-    // Ambil produk berdasarkan toko
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/products?select=id,name,price,unit,location,status,created_at&store_id=eq.${storeId}&order=created_at.desc`,
-      {
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${token}`
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(await response.text());
-    }
-
-    const products = await response.json();
-
-    // Hitung jumlah produk
-    document.getElementById("totalProducts").textContent =
-      products.length;
-
-    document.getElementById("pendingProducts").textContent =
-      products.filter(p => p.status === "pending").length;
-
-    document.getElementById("activeProducts").textContent =
-      products.filter(p => p.status === "active").length;
-
-    if (products.length === 0) {
-      productList.textContent = "Anda belum memiliki produk.";
-      return;
-    }
-
-    productList.innerHTML = "";
-
-    products.forEach(product => {
-      const item = document.createElement("div");
-
-      item.style.padding = "15px";
-      item.style.marginBottom = "12px";
-      item.style.background = "#ffffff";
-      item.style.borderRadius = "8px";
-
-      const name = document.createElement("h3");
-      name.textContent = product.name;
-
-      const price = document.createElement("p");
-      price.textContent =
-        "Harga: Rp " +
-        Number(product.price).toLocaleString("id-ID") +
-        " / " + (product.unit || "");
-
-      const location = document.createElement("p");
-      location.textContent =
-        "Lokasi: " + (product.location || "-");
-
-      const status = document.createElement("p");
-      status.textContent = "Status: " + product.status;
-
-      item.append(name, price, location, status);
-      productList.appendChild(item);
-    });
-
-  } catch (error) {
-    console.error("Gagal memuat produk:", error);
-    productList.textContent =
-      "Gagal memuat produk. Silakan coba lagi.";
+const response = await fetch(
+  `${SUPABASE_URL}/rest/v1/products?select=id,name,price,unit,location,status,created_at&store_id=eq.${encodeURIComponent(currentStoreId)}&order=created_at.desc`,
+  {
+    headers: supabaseHeaders()
   }
+);
+
+if (!response.ok) {
+  const message = await response.text();
+  throw new Error(`Gagal memuat produk (${response.status}): ${message}`);
+}
+
+const products = await response.json();
+
+totalProducts.textContent = products.length;
+
+pendingProducts.textContent =
+  products.filter(product => product.status === "pending").length;
+
+activeProducts.textContent =
+  products.filter(product => product.status === "active").length;
+
+if (products.length === 0) {
+  productList.textContent = "Anda belum memiliki produk.";
+  return;
+}
+
+productList.innerHTML = "";
+
+products.forEach(product => {
+  const item = document.createElement("div");
+  item.className = "product-item";
+
+  const name = document.createElement("h3");
+  name.textContent = product.name;
+
+  const price = document.createElement("p");
+  price.textContent =
+    "Harga: Rp " +
+    Number(product.price).toLocaleString("id-ID") +
+    " / " + (product.unit || "");
+
+  const location = document.createElement("p");
+  location.textContent =
+    "Lokasi: " + (product.location || "-");
+
+  const status = document.createElement("p");
+  status.textContent =
+    "Status: " + (product.status || "Tidak diketahui");
+
+  item.append(name, price, location, status);
+  productList.appendChild(item);
+});
+
+} catch (error) {
+console.error("Gagal memuat produk:", error);
+
+productList.textContent =
+  "Terjadi kesalahan: " + error.message;
+
+}
 }
 
 // ========================================
 // TOMBOL TAMBAH PRODUK
 // ========================================
 
-document.getElementById("addProductBtn").addEventListener("click", () => {
-  alert("Fitur tambah produk akan segera dibuat.");
+addProductBtn.addEventListener("click", () => {
+if (!currentStoreId) {
+alert("Toko belum tersedia. Produk belum bisa ditambahkan.");
+return;
+}
+
+productFormSection.hidden = false;
+
+productFormSection.scrollIntoView({
+behavior: "smooth",
+block: "start"
+});
+});
+
+// ========================================
+// TOMBOL BATAL
+// ========================================
+
+cancelProductBtn.addEventListener("click", () => {
+productForm.reset();
+productFormSection.hidden = true;
+
+const formMessage = document.getElementById("formMessage");
+
+if (formMessage) {
+formMessage.textContent = "";
+}
 });
 
 // ========================================
@@ -149,8 +215,8 @@ document.getElementById("addProductBtn").addEventListener("click", () => {
 // ========================================
 
 document.getElementById("logoutBtn").addEventListener("click", () => {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("user");
+localStorage.removeItem("access_token");
+localStorage.removeItem("user");
 
-  window.location.href = "login.html";
+window.location.href = "login.html";
 });
